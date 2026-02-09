@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, TFolder, normalizePath, debounce } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, TFolder, normalizePath } from 'obsidian';
 import { GhostWriterSettings, DEFAULT_SETTINGS } from './src/types';
 import { GhostAPIClient } from './src/ghost/api-client';
 import { generateNewPostTemplate, addGhostPropertiesToContent, hasGhostProperties } from './src/templates';
@@ -8,7 +8,6 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	settings: GhostWriterSettings;
 	ghostClient: GhostAPIClient;
 	syncEngine: SyncEngine;
-	private syncDebounced: (file: TFile) => void;
 	private statusBarItem: HTMLElement;
 	private periodicSyncInterval: number;
 
@@ -32,26 +31,6 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.syncEngine.onStatusChange = (status, message) => {
 			this.updateStatusBar(status, message);
 		};
-
-		// Create debounced sync function (wait 2 seconds after last change)
-		this.syncDebounced = debounce(
-			async (file: TFile) => {
-				if (this.syncEngine.shouldSyncFile(file)) {
-					await this.syncEngine.syncFileToGhost(file);
-				}
-			},
-			2000,
-			true  // true = reset timer on each call (standard debounce behavior)
-		);
-
-		// Watch for file modifications
-		this.registerEvent(
-			this.app.vault.on('modify', (file) => {
-				if (file instanceof TFile) {
-					this.syncDebounced(file);
-				}
-			})
-		);
 
 		// Add status bar item
 		this.statusBarItem = this.addStatusBarItem();
