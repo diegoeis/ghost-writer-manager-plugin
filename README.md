@@ -10,7 +10,8 @@ One-way synchronization from Obsidian to Ghost CMS with post scheduling, YAML me
 - 🔄 **Automatic sync** - Debounced sync on file save (2s delay)
 - ⏰ **Periodic sync** - Configurable interval sync (default: 15 minutes)
 - ✨ **Markdown to Lexical conversion** - Full markdown support including images
-- 🔐 **JWT authentication** - Secure Ghost Admin API integration
+- 🔐 **Secure credentials** - API keys stored in Obsidian's secure keychain
+- 🔑 **JWT authentication** - Secure Ghost Admin API integration
 - 📊 **Status bar indicator** - Visual feedback on sync status
 - 🎯 **Flexible configuration** - Custom sync folder, prefix, and intervals
 
@@ -79,12 +80,14 @@ One-way synchronization from Obsidian to Ghost CMS with post scheduling, YAML me
 2. Navigate to **Ghost Writer Manager** under Community Plugins
 3. Configure the following:
    - **Ghost URL**: Your Ghost site URL (e.g., `https://yourblog.ghost.io`)
-   - **Admin API Key**: The key you copied from Ghost
+   - **Admin API Key**: The key you copied from Ghost (stored securely in Obsidian's keychain)
    - **Sync Folder**: Where Ghost posts will be stored in your vault (default: `Ghost Posts`)
    - **Sync Interval**: How often to check for changes in minutes (default: 15)
-   - **YAML Prefix**: Prefix for Ghost metadata fields (default: `ghost`)
+   - **YAML Prefix**: Prefix for Ghost metadata fields (default: `g_`)
 
 4. Click **Test Connection** to verify your credentials
+
+> **Note**: Your Admin API Key is stored securely using Obsidian's keychain and is not saved in plain text.
 
 ## Usage
 
