@@ -1,18 +1,36 @@
 # Ghost Writer Manager
 
-Synchronize posts bidirectionally between Ghost CMS and Obsidian with editorial calendar and YAML metadata control.
+One-way synchronization from Obsidian to Ghost CMS with post scheduling, YAML metadata control, and automatic sync.
 
 ## Features
 
-- 🔄 Bidirectional sync between Ghost and Obsidian
-- 📝 Manage Ghost posts using YAML frontmatter
-- 📅 Editorial calendar view (coming soon)
-- 🔐 Secure credential storage using Obsidian's secret storage
-- ✨ Markdown to Ghost format conversion (coming soon)
+- 🔄 **One-way sync** from Obsidian to Ghost (keeps Ghost as your publishing platform)
+- 📝 **YAML frontmatter control** - Manage all Ghost metadata directly in Obsidian
+- 🕐 **Post scheduling** - Schedule posts for future publication with `g_published_at`
+- 🔄 **Automatic sync** - Debounced sync on file save (2s delay)
+- ⏰ **Periodic sync** - Configurable interval sync (default: 15 minutes)
+- ✨ **Markdown to Lexical conversion** - Full markdown support including images
+- 🔐 **JWT authentication** - Secure Ghost Admin API integration
+- 📊 **Status bar indicator** - Visual feedback on sync status
+- 🎯 **Flexible configuration** - Custom sync folder, prefix, and intervals
 
 ## Installation
 
-### Development Installation
+### From GitHub Releases (Recommended)
+
+1. Go to the [Releases page](https://github.com/diegoeis/ghost-writer-manager-plugin/releases)
+2. Download the latest release files:
+   - `main.js`
+   - `manifest.json`
+   - `styles.css`
+3. In your vault, navigate to `.obsidian/plugins/` folder
+4. Create a new folder called `ghost-writer-manager`
+5. Move the downloaded files into `.obsidian/plugins/ghost-writer-manager/`
+6. Restart Obsidian or reload the app
+7. Go to **Settings** → **Community Plugins**
+8. Enable **Ghost Writer Manager**
+
+### From Source (For Development)
 
 1. Clone this repository:
    ```bash
@@ -72,28 +90,45 @@ Synchronize posts bidirectionally between Ghost CMS and Obsidian with editorial 
 
 ### Commands
 
-- **Sync with Ghost**: Manually trigger synchronization (coming soon)
-- **Test Ghost connection**: Verify your Ghost credentials are working
+Available commands (Cmd/Ctrl + P):
 
-### YAML Frontmatter (Coming Soon)
+- **Sync with Ghost** - Manually sync all files in sync folder
+- **Test Ghost connection** - Verify your Ghost credentials
+- **Create new Ghost post** - Generate new post with Ghost properties template
+- **Add Ghost properties to current note** - Add Ghost properties to existing note
+- **Sync current note to Ghost** - Force sync of active file
+- **Debug commands** - Show properties, test JWT, view file data
 
-Posts will use YAML frontmatter to control Ghost metadata:
+### YAML Frontmatter
+
+Control all Ghost post metadata using YAML frontmatter:
 
 ```yaml
 ---
-ghost_status: published
-ghost_tags: [obsidian, ghost, tutorial]
-ghost_featured: true
-ghost_feature_image: https://example.com/image.jpg
-ghost_excerpt: A brief description of the post
-ghost_published_at: 2024-01-15T10:00:00Z
-ghost_no_sync: false
+g_post_access: paid              # Visibility: public, members, or paid
+g_published: false               # Draft (false) or published (true)
+g_published_at: ""               # Schedule: ISO date (e.g., "2026-12-25T10:00:00.000Z")
+g_featured: false                # Mark as featured post
+g_tags: [obsidian, ghost]        # Post tags
+g_excerpt: "Post summary"        # Custom excerpt/description
+g_feature_image: ""              # Featured image URL
+g_slug: "custom-url"             # Custom URL slug
+g_no_sync: false                 # Disable sync for this post
 ---
 
 # Your Post Title
 
 Your post content here...
 ```
+
+### Post Scheduling
+
+Control when posts are published:
+
+- **Draft**: `g_published: false` (ignores `g_published_at`)
+- **Publish now**: `g_published: true` + `g_published_at: ""`
+- **Schedule**: `g_published: true` + `g_published_at: "2026-12-25T10:00:00.000Z"` (future date)
+- **Backdate**: `g_published: true` + `g_published_at: "2020-01-01T10:00:00.000Z"` (past date)
 
 ## Development
 
@@ -119,15 +154,27 @@ ghost-writer-manager-plugin/
 
 ## Roadmap
 
-- [x] Ghost API authentication
+### ✅ Completed (v0.1.0)
+- [x] Ghost API authentication (JWT with HMAC-SHA256)
 - [x] Settings interface
 - [x] Connection testing
-- [ ] Bidirectional sync engine
-- [ ] YAML metadata control
-- [ ] Markdown to Ghost format conversion
+- [x] One-way sync engine (Obsidian → Ghost)
+- [x] YAML metadata control (full Ghost properties support)
+- [x] Markdown to Lexical format conversion
+- [x] Automatic sync on file save (debounced)
+- [x] Periodic sync (configurable interval)
+- [x] Post scheduling system
+- [x] Status bar indicator
+- [x] Manual sync commands
+
+### 🚧 Future Features
+- [ ] Two-way sync (Ghost → Obsidian)
 - [ ] Editorial calendar view
+- [ ] Ghost pages support
+- [ ] Media upload support
 - [ ] Conflict resolution
-- [ ] Automatic sync
+- [ ] Bulk operations
+- [ ] Post templates
 
 ## Contributing
 
