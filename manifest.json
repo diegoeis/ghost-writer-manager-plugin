@@ -3,7 +3,7 @@
 	"name": "Ghost Writer Manager",
 	"version": "0.1.0",
 	"minAppVersion": "1.0.0",
-	"description": "Synchronize posts bidirectionally between Ghost CMS and your vault with editorial calendar and YAML metadata control.",
+	"description": "One-way sync from Obsidian to Ghost CMS with post scheduling, YAML metadata control, and automatic sync on save.",
 	"author": "Diego Eis",
 	"authorUrl": "https://github.com/diegoeis",
 	"isDesktopOnly": false
