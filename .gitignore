@@ -1,0 +1,19 @@
+# npm
+node_modules
+
+# build
+main.js
+*.js.map
+
+# obsidian
+data.json
+
+# Logs
+npm-debug.log*
+
+# OS
+.DS_Store
+
+# dev config (contains vault path)
+dev.config.json
+.claude/skills/eis-product-management/

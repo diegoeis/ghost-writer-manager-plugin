@@ -1,0 +1,56 @@
+/**
+ * Plugin settings interface
+ */
+export interface GhostWriterSettings {
+	ghostUrl: string;
+	ghostAdminApiKey: string;
+	syncFolder: string;
+	syncInterval: number; // in minutes
+	yamlPrefix: string;
+	lastSync: number;
+	showSyncNotifications: boolean;
+}
+
+/**
+ * Default settings
+ */
+export const DEFAULT_SETTINGS: GhostWriterSettings = {
+	ghostUrl: '',
+	ghostAdminApiKey: '',
+	syncFolder: 'Ghost Posts',
+	syncInterval: 15,
+	yamlPrefix: 'ghost_',
+	lastSync: 0,
+	showSyncNotifications: true
+};
+
+/**
+ * Ghost post status
+ */
+export type GhostPostStatus = 'draft' | 'published' | 'scheduled';
+
+/**
+ * Ghost post access (visibility)
+ */
+export type GhostPostAccess = 'public' | 'members' | 'paid';
+
+/**
+ * Ghost post interface (simplified for now)
+ */
+export interface GhostPost {
+	id: string;
+	uuid: string;
+	title: string;
+	slug: string;
+	html: string;
+	lexical: string;
+	status: GhostPostStatus;
+	visibility: GhostPostAccess; // Ghost API uses 'visibility' field
+	featured: boolean;
+	feature_image: string | null;
+	excerpt: string | null;
+	tags: Array<{ name: string }>;
+	published_at: string | null;
+	updated_at: string;
+	created_at: string;
+}
