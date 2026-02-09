@@ -1,13 +1,19 @@
-import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, TFolder, normalizePath } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, TFolder, normalizePath, debounce } from 'obsidian';
 import { GhostWriterSettings, DEFAULT_SETTINGS } from './src/types';
 import { GhostAPIClient } from './src/ghost/api-client';
 import { generateNewPostTemplate, addGhostPropertiesToContent, hasGhostProperties } from './src/templates';
 import { SyncEngine } from './src/sync/sync-engine';
 
+// ⚠️ IMPORTANT: Set to false before production build/release
+// Development mode flag - enables auto-sync on file changes (2s debounce)
+// Production mode - only syncs according to configured interval
+const DEV_MODE = true;
+
 export default class GhostWriterManagerPlugin extends Plugin {
 	settings: GhostWriterSettings;
 	ghostClient: GhostAPIClient;
 	syncEngine: SyncEngine;
+	private syncDebounced?: (file: TFile) => void;
 	private statusBarItem: HTMLElement;
 	private periodicSyncInterval: number;
 
@@ -31,6 +37,29 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.syncEngine.onStatusChange = (status, message) => {
 			this.updateStatusBar(status, message);
 		};
+
+		// Development mode: Enable auto-sync on file changes with debounce
+		if (DEV_MODE) {
+			console.log('[Ghost] DEV_MODE enabled: Auto-sync on file changes (2s debounce)');
+			this.syncDebounced = debounce(
+				async (file: TFile) => {
+					if (this.syncEngine.shouldSyncFile(file)) {
+						await this.syncEngine.syncFileToGhost(file);
+					}
+				},
+				2000,
+				true  // Reset timer on each change
+			);
+
+			// Watch for file modifications in dev mode
+			this.registerEvent(
+				this.app.vault.on('modify', (file) => {
+					if (file instanceof TFile && this.syncDebounced) {
+						this.syncDebounced(file);
+					}
+				})
+			);
+		}
 
 		// Add status bar item
 		this.statusBarItem = this.addStatusBarItem();

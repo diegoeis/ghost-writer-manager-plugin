@@ -155,6 +155,24 @@ ghost-writer-manager-plugin/
 - `npm run build` - Build for production
 - `npm run lint` - Run ESLint
 
+### Development Mode
+
+The plugin includes a `DEV_MODE` flag in `main.ts` that enables auto-sync on file changes:
+
+```typescript
+const DEV_MODE = true; // Set to false for production builds
+```
+
+**When `DEV_MODE = true`:**
+- Files auto-sync 2 seconds after last change (debounced)
+- Useful for testing during development
+
+**When `DEV_MODE = false` (production):**
+- Files only sync according to the configured interval
+- Manual sync still available via commands
+
+**Important:** Always set `DEV_MODE = false` before building for production/release.
+
 ## Roadmap
 
 ### ✅ Completed (v0.1.0)
@@ -164,11 +182,11 @@ ghost-writer-manager-plugin/
 - [x] One-way sync engine (Obsidian → Ghost)
 - [x] YAML metadata control (full Ghost properties support)
 - [x] Markdown to Lexical format conversion
-- [x] Automatic sync on file save (debounced)
 - [x] Periodic sync (configurable interval)
 - [x] Post scheduling system
 - [x] Status bar indicator
 - [x] Manual sync commands
+- [x] Development mode with auto-sync (debounced)
 
 ### 🚧 Future Features
 - [ ] Two-way sync (Ghost → Obsidian)
