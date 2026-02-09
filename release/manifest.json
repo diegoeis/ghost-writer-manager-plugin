@@ -1,0 +1,10 @@
+{
+	"id": "ghost-writer-manager",
+	"name": "Ghost Writer Manager",
+	"version": "0.1.0",
+	"minAppVersion": "1.0.0",
+	"description": "Synchronize posts bidirectionally between Ghost CMS and your vault with editorial calendar and YAML metadata control.",
+	"author": "Diego Eis",
+	"authorUrl": "https://github.com/diegoeis",
+	"isDesktopOnly": false
+}

@@ -1,5 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, TFolder, normalizePath, debounce } from 'obsidian';
-import { GhostWriterSettings, DEFAULT_SETTINGS } from './src/types';
+import { GhostWriterSettings, DEFAULT_SETTINGS, GHOST_API_KEY_KEYCHAIN_KEY } from './src/types';
 import { GhostAPIClient } from './src/ghost/api-client';
 import { generateNewPostTemplate, addGhostPropertiesToContent, hasGhostProperties } from './src/templates';
 import { SyncEngine } from './src/sync/sync-engine';
@@ -15,10 +15,13 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 
+		// Get API key from secure keychain
+		const apiKey = await this.loadApiKey();
+
 		// Initialize Ghost API client
 		this.ghostClient = new GhostAPIClient(
 			this.settings.ghostUrl,
-			this.settings.ghostAdminApiKey,
+			apiKey,
 			this.app
 		);
 
@@ -146,7 +149,8 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			id: 'debug-test-jwt',
 			name: 'Debug: Test JWT token generation',
 			callback: async () => {
-				if (!this.settings.ghostUrl || !this.settings.ghostAdminApiKey) {
+				const apiKey = await this.loadApiKey();
+				if (!this.settings.ghostUrl || !apiKey) {
 					new Notice('Please configure Ghost URL and Admin API Key first');
 					return;
 				}
@@ -154,7 +158,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 				try {
 					console.log('[Ghost Debug] Testing JWT generation...');
 					console.log('[Ghost Debug] Ghost URL:', this.settings.ghostUrl);
-					console.log('[Ghost Debug] API Key format:', this.settings.ghostAdminApiKey.includes(':') ? 'Valid (contains :)' : 'Invalid (missing :)');
+					console.log('[Ghost Debug] API Key format:', apiKey.includes(':') ? 'Valid (contains :)' : 'Invalid (missing :)');
 
 					// Test connection which will generate and use a JWT
 					const result = await this.ghostClient.testConnection();
@@ -204,14 +208,15 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		}
 	}
 
-	setupPeriodicSync() {
+	async setupPeriodicSync() {
 		// Clear existing interval if any
 		if (this.periodicSyncInterval) {
 			window.clearInterval(this.periodicSyncInterval);
 		}
 
 		// Only setup periodic sync if credentials are configured
-		if (!this.settings.ghostUrl || !this.settings.ghostAdminApiKey) {
+		const apiKey = await this.loadApiKey();
+		if (!this.settings.ghostUrl || !apiKey) {
 			return;
 		}
 
@@ -256,17 +261,39 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-		// Update Ghost client with new credentials
-		this.ghostClient.updateCredentials(
-			this.settings.ghostUrl,
-			this.settings.ghostAdminApiKey
-		);
 		// Restart periodic sync with new settings
 		this.setupPeriodicSync();
 	}
 
+	/**
+	 * Load Ghost Admin API Key from secure keychain
+	 */
+	async loadApiKey(): Promise<string> {
+		const apiKey = await this.app.loadLocalStorage(GHOST_API_KEY_KEYCHAIN_KEY);
+		return apiKey || '';
+	}
+
+	/**
+	 * Save Ghost Admin API Key to secure keychain
+	 */
+	async saveApiKey(apiKey: string): Promise<void> {
+		if (apiKey && apiKey.trim() !== '') {
+			await this.app.saveLocalStorage(GHOST_API_KEY_KEYCHAIN_KEY, apiKey);
+		} else {
+			// Remove from keychain if empty
+			await this.app.saveLocalStorage(GHOST_API_KEY_KEYCHAIN_KEY, null);
+		}
+
+		// Update Ghost client with new credentials
+		this.ghostClient.updateCredentials(this.settings.ghostUrl, apiKey);
+
+		// Restart periodic sync with new credentials
+		this.setupPeriodicSync();
+	}
+
 	async testGhostConnection(): Promise<void> {
-		if (!this.settings.ghostUrl || !this.settings.ghostAdminApiKey) {
+		const apiKey = await this.loadApiKey();
+		if (!this.settings.ghostUrl || !apiKey) {
 			new Notice('Please configure Ghost URL and Admin API Key first');
 			return;
 		}
@@ -285,7 +312,8 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	}
 
 	async syncWithGhost(): Promise<void> {
-		if (!this.settings.ghostUrl || !this.settings.ghostAdminApiKey) {
+		const apiKey = await this.loadApiKey();
+		if (!this.settings.ghostUrl || !apiKey) {
 			new Notice('Please configure Ghost URL and Admin API Key first');
 			return;
 		}
@@ -409,13 +437,16 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Admin API key')
-			.setDesc('Your Ghost Admin API key from Integrations > Custom Integrations (format: id:secret, e.g., 6579a8f5c8d9e10001234567:7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a)')
+			.setDesc('Your Ghost Admin API key from Integrations > Custom Integrations (format: id:secret). Stored securely in Obsidian\'s keychain.')
 			.addText(text => {
+				// Load current value from keychain
+				this.plugin.loadApiKey().then(apiKey => {
+					text.setValue(apiKey);
+				});
+
 				text.setPlaceholder('id:secret')
-					.setValue(this.plugin.settings.ghostAdminApiKey)
 					.onChange(async (value) => {
-						this.plugin.settings.ghostAdminApiKey = value.trim();
-						await this.plugin.saveSettings();
+						await this.plugin.saveApiKey(value.trim());
 					});
 				text.inputEl.type = 'password';
 			});
