@@ -58,4 +58,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No support for Ghost pages (posts only)
 - No media upload support yet
 
-[0.1.0]: https://github.com/diegoeis/ghost-write-manager/releases/tag/0.1.0
+[0.1.0]: https://github.com/diegoeis/ghost-writer-manager-plugin/releases/tag/0.1.0
