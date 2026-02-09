@@ -28,7 +28,7 @@ Before submitting, ensure you have:
      "name": "Ghost Writer Manager",
      "version": "0.1.0",
      "minAppVersion": "1.0.0",
-     "description": "One-way sync from Obsidian to Ghost CMS...",
+     "description": "Sync from Obsidian to Ghost CMS...",
      "author": "Diego Eis",
      "authorUrl": "https://github.com/diegoeis",
      "isDesktopOnly": false
@@ -92,7 +92,7 @@ Before submitting, ensure you have:
      "id": "ghost-writer-manager",
      "name": "Ghost Writer Manager",
      "author": "Diego Eis",
-     "description": "One-way sync from Obsidian to Ghost CMS with post scheduling, YAML metadata control, and automatic sync on save.",
+     "description": "Sync from Obsidian to Ghost CMS with post scheduling, YAML metadata control, and automatic sync on save.",
      "repo": "diegoeis/ghost-writer-manager-plugin"
    }
    ```
@@ -125,7 +125,7 @@ git push origin main
    - **Author**: Diego Eis
    - **Repository**: https://github.com/diegoeis/ghost-writer-manager-plugin
    - **Initial Version**: 0.1.0
-   - **Description**: One-way sync from Obsidian to Ghost CMS with post scheduling, YAML metadata control, and automatic sync on save.
+   - **Description**: Sync from Obsidian to Ghost CMS with post scheduling, YAML metadata control, and automatic sync on save.
 
    ## Checklist
 
@@ -140,7 +140,7 @@ git push origin main
 
    ## Features
 
-   - One-way synchronization from Obsidian to Ghost CMS
+   - Synchronization from Obsidian to Ghost CMS
    - Post scheduling with `g_published_at` property
    - Automatic sync on file save (debounced 2s)
    - Periodic sync based on configurable interval
