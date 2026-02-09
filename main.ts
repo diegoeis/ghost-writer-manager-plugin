@@ -270,15 +270,33 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	 */
 	async loadApiKey(): Promise<string> {
 		if (!this.settings.ghostApiKeySecretName) {
+			console.warn('[Ghost] No secret name configured');
 			return '';
 		}
 
+		console.log('[Ghost] Attempting to load secret:', this.settings.ghostApiKeySecretName);
+
 		try {
-			// @ts-ignore - Obsidian Secrets API
-			const apiKey = await this.app.loadSecret(this.settings.ghostApiKeySecretName);
-			return apiKey || '';
+			// Use the correct API: app.secretStorage.getSecret()
+			if (!this.app.secretStorage) {
+				console.error('[Ghost] app.secretStorage is not available. Obsidian version may be too old.');
+				new Notice('Obsidian Secrets API not available. Please update Obsidian to the latest version.');
+				return '';
+			}
+
+			const apiKey = this.app.secretStorage.getSecret(this.settings.ghostApiKeySecretName);
+
+			if (!apiKey) {
+				console.error('[Ghost] Secret not found or empty:', this.settings.ghostApiKeySecretName);
+				new Notice(`Secret "${this.settings.ghostApiKeySecretName}" not found in Keychain. Please create it in Settings → Keychain.`);
+				return '';
+			}
+
+			console.log('[Ghost] Successfully loaded secret (length:', apiKey.length, ')');
+			return apiKey;
 		} catch (error) {
 			console.error('[Ghost] Error loading API key from secrets:', error);
+			new Notice(`Error loading secret: ${error.message}`);
 			return '';
 		}
 	}
