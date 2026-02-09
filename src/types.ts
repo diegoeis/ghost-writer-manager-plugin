@@ -1,9 +1,10 @@
 /**
  * Plugin settings interface
- * Note: ghostAdminApiKey is stored securely in Obsidian's keychain, not in settings
+ * Note: ghostAdminApiKey is stored securely in Obsidian's Secrets (Keychain)
  */
 export interface GhostWriterSettings {
 	ghostUrl: string;
+	ghostApiKeySecretName: string; // Name of the secret in Obsidian's Keychain
 	syncFolder: string;
 	syncInterval: number; // in minutes
 	yamlPrefix: string;
@@ -16,17 +17,13 @@ export interface GhostWriterSettings {
  */
 export const DEFAULT_SETTINGS: GhostWriterSettings = {
 	ghostUrl: '',
+	ghostApiKeySecretName: 'ghost-api-key',
 	syncFolder: 'Ghost Posts',
 	syncInterval: 15,
 	yamlPrefix: 'ghost_',
 	lastSync: 0,
 	showSyncNotifications: true
 };
-
-/**
- * Keychain key for storing Ghost Admin API Key securely
- */
-export const GHOST_API_KEY_KEYCHAIN_KEY = 'ghost-admin-api-key';
 
 /**
  * Ghost post status

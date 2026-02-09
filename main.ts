@@ -1,5 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, TFolder, normalizePath, debounce } from 'obsidian';
-import { GhostWriterSettings, DEFAULT_SETTINGS, GHOST_API_KEY_KEYCHAIN_KEY } from './src/types';
+import { GhostWriterSettings, DEFAULT_SETTINGS } from './src/types';
 import { GhostAPIClient } from './src/ghost/api-client';
 import { generateNewPostTemplate, addGhostPropertiesToContent, hasGhostProperties } from './src/templates';
 import { SyncEngine } from './src/sync/sync-engine';
@@ -266,29 +266,21 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	}
 
 	/**
-	 * Load Ghost Admin API Key from secure keychain
+	 * Load Ghost Admin API Key from Obsidian Secrets
 	 */
 	async loadApiKey(): Promise<string> {
-		const apiKey = await this.app.loadLocalStorage(GHOST_API_KEY_KEYCHAIN_KEY);
-		return apiKey || '';
-	}
-
-	/**
-	 * Save Ghost Admin API Key to secure keychain
-	 */
-	async saveApiKey(apiKey: string): Promise<void> {
-		if (apiKey && apiKey.trim() !== '') {
-			await this.app.saveLocalStorage(GHOST_API_KEY_KEYCHAIN_KEY, apiKey);
-		} else {
-			// Remove from keychain if empty
-			await this.app.saveLocalStorage(GHOST_API_KEY_KEYCHAIN_KEY, null);
+		if (!this.settings.ghostApiKeySecretName) {
+			return '';
 		}
 
-		// Update Ghost client with new credentials
-		this.ghostClient.updateCredentials(this.settings.ghostUrl, apiKey);
-
-		// Restart periodic sync with new credentials
-		this.setupPeriodicSync();
+		try {
+			// @ts-ignore - Obsidian Secrets API
+			const apiKey = await this.app.loadSecret(this.settings.ghostApiKeySecretName);
+			return apiKey || '';
+		} catch (error) {
+			console.error('[Ghost] Error loading API key from secrets:', error);
+			return '';
+		}
 	}
 
 	async testGhostConnection(): Promise<void> {
@@ -436,19 +428,28 @@ class GhostWriterSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Admin API key')
-			.setDesc('Your Ghost Admin API key from Integrations > Custom Integrations (format: id:secret). Stored securely in Obsidian\'s keychain.')
-			.addText(text => {
-				// Load current value from keychain
-				this.plugin.loadApiKey().then(apiKey => {
-					text.setValue(apiKey);
+			.setName('Admin API key secret name')
+			.setDesc('Name of the secret in Settings → Keychain that contains your Ghost Admin API key (format: id:secret)')
+			.addText(text => text
+				.setPlaceholder('ghost-api-key')
+				.setValue(this.plugin.settings.ghostApiKeySecretName)
+				.onChange(async (value) => {
+					this.plugin.settings.ghostApiKeySecretName = value.trim();
+					await this.plugin.saveSettings();
+				}))
+			.then((setting) => {
+				// Add a button to open Keychain settings
+				setting.addExtraButton((button) => {
+					button
+						.setIcon('key')
+						.setTooltip('Open Keychain settings')
+						.onClick(() => {
+							// @ts-ignore - Open settings tab
+							this.app.setting.open();
+							// @ts-ignore - Navigate to Keychain tab
+							this.app.setting.openTabById('keychain');
+						});
 				});
-
-				text.setPlaceholder('id:secret')
-					.onChange(async (value) => {
-						await this.plugin.saveApiKey(value.trim());
-					});
-				text.inputEl.type = 'password';
 			});
 
 		new Setting(containerEl)
