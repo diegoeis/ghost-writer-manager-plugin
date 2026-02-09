@@ -1,5 +1,7 @@
 # Development Guidelines for Ghost Writer Manager Plugin
 
+> **Note:** This project uses Claude Code for AI-assisted development. See `.claude/rules.md` for comprehensive development rules and best practices that must be followed.
+
 ## ⚠️ CRITICAL: Always Follow Obsidian Official Documentation
 
 **IMPORTANT**: Before implementing ANY feature, tool, API, method, or functionality:
