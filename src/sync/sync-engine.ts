@@ -1,6 +1,6 @@
 import { App, TFile, Notice } from 'obsidian';
 import { GhostAPIClient } from '../ghost/api-client';
-import { GhostWriterSettings } from '../types';
+import { GhostWriterSettings, GhostPost } from '../types';
 import { parseGhostMetadata, extractContent, updateFrontmatterWithGhostId } from '../frontmatter-parser';
 import { markdownToHtml, extractTitle, generateSlug } from '../converters/markdown-to-html';
 import { markdownToLexical } from '../converters/markdown-to-lexical';
@@ -150,7 +150,7 @@ export class SyncEngine {
 			});
 
 			// Check if this is an update or create
-			let ghostPost;
+			let ghostPost: GhostPost;
 			if (metadata.ghost_id) {
 				// Update existing post
 				console.log(`[Ghost Sync] Updating post ${metadata.ghost_id}`);

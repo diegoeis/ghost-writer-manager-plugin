@@ -115,7 +115,7 @@ export class GhostAPIClient {
 		// Import key
 		const key = await crypto.subtle.importKey(
 			'raw',
-			keyData,
+			keyData as BufferSource,
 			{ name: 'HMAC', hash: 'SHA-256' },
 			false,
 			['sign']
