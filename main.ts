@@ -7,7 +7,7 @@ import { SyncEngine } from './src/sync/sync-engine';
 // ⚠️ IMPORTANT: Set to false before production build/release
 // Development mode flag - enables auto-sync on file changes (2s debounce)
 // Production mode - only syncs according to configured interval
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 export default class GhostWriterManagerPlugin extends Plugin {
 	settings: GhostWriterSettings;

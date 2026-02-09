@@ -3,7 +3,7 @@
 	"name": "Ghost Writer Manager",
 	"version": "0.1.0",
 	"minAppVersion": "1.0.0",
-	"description": "Sync from Obsidian to Ghost CMS with post scheduling, YAML metadata control, and automatic sync on save.",
+	"description": "Sync notes to Ghost CMS with post scheduling, YAML metadata control, and periodic sync.",
 	"author": "Diego Eis",
 	"authorUrl": "https://github.com/diegoeis",
 	"isDesktopOnly": false
