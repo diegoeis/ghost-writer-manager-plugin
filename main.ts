@@ -41,7 +41,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 				}
 			},
 			2000,
-			false  // false = wait for the delay before executing
+			true  // true = reset timer on each call (standard debounce behavior)
 		);
 
 		// Watch for file modifications
