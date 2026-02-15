@@ -1,4 +1,4 @@
-import { GhostPostStatus, GhostPostAccess } from './types';
+import { GhostPostAccess } from './types';
 
 /**
  * Ghost metadata extracted from frontmatter
@@ -23,8 +23,8 @@ export function parseGhostMetadata(
 	frontmatter: Record<string, unknown>,
 	prefix: string
 ): GhostMetadata | null {
-	console.log('[Ghost Parse] Starting parse with prefix:', prefix);
-	console.log('[Ghost Parse] Frontmatter keys:', Object.keys(frontmatter));
+	console.debug('[Ghost Parse] Starting parse with prefix:', prefix);
+	console.debug('[Ghost Parse] Frontmatter keys:', Object.keys(frontmatter));
 
 	// Helper to get prefixed property
 	const get = (key: string): unknown => {
@@ -37,7 +37,7 @@ export function parseGhostMetadata(
 		return key.startsWith(prefix) || key.startsWith(prefix.replace(/_$/, ''));
 	});
 
-	console.log('[Ghost Parse] Has Ghost props?', hasGhostProps);
+	console.debug('[Ghost Parse] Has Ghost props?', hasGhostProps);
 
 	if (!hasGhostProps) {
 		return null;
@@ -68,22 +68,22 @@ export function parseGhostMetadata(
 	const published = parseBool(get('published'));
 	const no_sync = parseBool(get('no_sync'));
 
-	console.log('[Ghost Parse] Featured value:', get('featured'), '=> parsed:', featured);
-	console.log('[Ghost Parse] Published value:', get('published'), '=> parsed:', published);
+	console.debug('[Ghost Parse] Featured value:', get('featured'), '=> parsed:', featured);
+	console.debug('[Ghost Parse] Published value:', get('published'), '=> parsed:', published);
 
 	// Parse excerpt and feature_image (only if not empty)
-	console.log('[Ghost Parse] Excerpt raw value:', get('excerpt'));
+	console.debug('[Ghost Parse] Excerpt raw value:', get('excerpt'));
 	const rawExcerpt = get('excerpt');
-	const excerpt = rawExcerpt && String(rawExcerpt).trim() !== '' ? String(rawExcerpt) : '';
+	const excerpt = rawExcerpt && typeof rawExcerpt === 'string' && rawExcerpt.trim() !== '' ? rawExcerpt : (rawExcerpt && typeof rawExcerpt !== 'object' ? String(rawExcerpt) : '');
 
 	const rawFeatureImage = get('feature_image');
-	const feature_image = rawFeatureImage && String(rawFeatureImage).trim() !== '' ? String(rawFeatureImage) : '';
+	const feature_image = rawFeatureImage && typeof rawFeatureImage === 'string' && rawFeatureImage.trim() !== '' ? rawFeatureImage : (rawFeatureImage && typeof rawFeatureImage !== 'object' ? String(rawFeatureImage) : '');
 
-	console.log('[Ghost Parse] Excerpt parsed:', excerpt, '(length:', excerpt.length, ')');
+	console.debug('[Ghost Parse] Excerpt parsed:', excerpt, '(length:', excerpt.length, ')');
 
 	// Parse published_at (optional date for scheduling)
 	const rawPublishedAt = get('published_at');
-	const published_at = rawPublishedAt ? String(rawPublishedAt) : undefined;
+	const published_at = rawPublishedAt && typeof rawPublishedAt !== 'object' ? String(rawPublishedAt) : undefined;
 
 	return {
 		post_access,

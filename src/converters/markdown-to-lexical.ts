@@ -72,10 +72,10 @@ export function markdownToLexical(markdown: string): string {
 		}
 
 		// Unordered list
-		if (line.match(/^[\*\-\+]\s+/)) {
+		if (line.match(/^[*\-+]\s+/)) {
 			const listItems: string[] = [];
-			while (i < lines.length && lines[i].match(/^[\*\-\+]\s+/)) {
-				listItems.push(lines[i].replace(/^[\*\-\+]\s+/, ''));
+			while (i < lines.length && lines[i].match(/^[*\-+]\s+/)) {
+				listItems.push(lines[i].replace(/^[*\-+]\s+/, ''));
 				i++;
 			}
 			nodes.push(createUnorderedList(listItems));

@@ -1,7 +1,7 @@
-import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, TFolder, normalizePath, debounce } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, normalizePath, debounce } from 'obsidian';
 import { GhostWriterSettings, DEFAULT_SETTINGS } from './src/types';
 import { GhostAPIClient } from './src/ghost/api-client';
-import { generateNewPostTemplate, addGhostPropertiesToContent, hasGhostProperties } from './src/templates';
+import { generateNewPostTemplate, addGhostPropertiesToContent } from './src/templates';
 import { SyncEngine } from './src/sync/sync-engine';
 
 // ⚠️ IMPORTANT: Set to false before production build/release
@@ -21,7 +21,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		await this.loadSettings();
 
 		// Get API key from secure keychain
-		const apiKey = await this.loadApiKey();
+		const apiKey = this.loadApiKey();
 
 		// Initialize Ghost API client
 		this.ghostClient = new GhostAPIClient(
@@ -40,7 +40,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 		// Development mode: Enable auto-sync on file changes with debounce
 		if (DEV_MODE) {
-			console.log('[Ghost] DEV_MODE enabled: Auto-sync on file changes (2s debounce)');
+			console.debug('[Ghost] DEV_MODE enabled: Auto-sync on file changes (2s debounce)');
 			this.syncDebounced = debounce(
 				async (file: TFile) => {
 					if (this.syncEngine.shouldSyncFile(file)) {
@@ -66,7 +66,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.updateStatusBar('idle');
 
 		// Setup periodic sync
-		this.setupPeriodicSync();
+		void this.setupPeriodicSync();
 
 		// Add settings tab
 		this.addSettingTab(new GhostWriterSettingTab(this.app, this));
@@ -102,8 +102,8 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.addCommand({
 			id: 'add-ghost-properties',
 			name: 'Add Ghost properties to current note',
-			editorCallback: async (editor, view) => {
-				await this.addGhostPropertiesToCurrentNote(view.file);
+			editorCallback: (editor, view) => {
+				void this.addGhostPropertiesToCurrentNote(view.file);
 			}
 		});
 
@@ -111,9 +111,9 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.addCommand({
 			id: 'sync-current-note',
 			name: 'Sync current note to Ghost',
-			editorCallback: async (editor, view) => {
+			editorCallback: (editor, view) => {
 				if (view.file) {
-					await this.syncEngine.syncFileToGhost(view.file);
+					void this.syncEngine.syncFileToGhost(view.file);
 				}
 			}
 		});
@@ -121,8 +121,8 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add debug command to check file properties
 		this.addCommand({
 			id: 'debug-ghost-properties',
-			name: 'Debug: Show Ghost properties in current note',
-			editorCallback: async (editor, view) => {
+			name: 'Debug: show Ghost properties in current note',
+			editorCallback: (editor, view) => {
 				if (!view.file) {
 					new Notice('No active file');
 					return;
@@ -131,12 +131,12 @@ export default class GhostWriterManagerPlugin extends Plugin {
 				const cache = this.app.metadataCache.getFileCache(view.file);
 				if (!cache?.frontmatter) {
 					new Notice('No frontmatter found');
-					console.log('[Ghost Debug] No frontmatter');
+					console.debug('[Ghost Debug] No frontmatter');
 					return;
 				}
 
-				console.log('[Ghost Debug] Frontmatter:', cache.frontmatter);
-				console.log('[Ghost Debug] YAML Prefix:', this.settings.yamlPrefix);
+				console.debug('[Ghost Debug] Frontmatter:', cache.frontmatter);
+				console.debug('[Ghost Debug] YAML prefix:', this.settings.yamlPrefix);
 
 				const ghostKeys = Object.keys(cache.frontmatter).filter(key =>
 					key.startsWith(this.settings.yamlPrefix)
@@ -144,10 +144,10 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 				if (ghostKeys.length === 0) {
 					new Notice(`No properties with prefix "${this.settings.yamlPrefix}" found`);
-					console.log('[Ghost Debug] Available keys:', Object.keys(cache.frontmatter));
+					console.debug('[Ghost Debug] Available keys:', Object.keys(cache.frontmatter));
 				} else {
 					new Notice(`Found ${ghostKeys.length} Ghost properties`);
-					console.log('[Ghost Debug] Ghost properties:', ghostKeys);
+					console.debug('[Ghost Debug] Ghost properties:', ghostKeys);
 				}
 			}
 		});
@@ -155,31 +155,31 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add debug command to test JWT token
 		this.addCommand({
 			id: 'debug-test-jwt',
-			name: 'Debug: Test JWT token generation',
+			name: 'Debug: test JWT token generation',
 			callback: async () => {
-				const apiKey = await this.loadApiKey();
+				const apiKey = this.loadApiKey();
 				if (!this.settings.ghostUrl || !apiKey) {
-					new Notice('Please configure Ghost URL and Admin API Key first');
+					new Notice('Please configure Ghost URL and Admin API key first');
 					return;
 				}
 
 				try {
-					console.log('[Ghost Debug] Testing JWT generation...');
-					console.log('[Ghost Debug] Ghost URL:', this.settings.ghostUrl);
-					console.log('[Ghost Debug] API Key format:', apiKey.includes(':') ? 'Valid (contains :)' : 'Invalid (missing :)');
+					console.debug('[Ghost Debug] Testing JWT generation...');
+					console.debug('[Ghost Debug] Ghost URL:', this.settings.ghostUrl);
+					console.debug('[Ghost Debug] API key format:', apiKey.includes(':') ? 'Valid (contains :)' : 'Invalid (missing :)');
 
 					// Test connection which will generate and use a JWT
 					const result = await this.ghostClient.testConnection();
 					if (result) {
-						new Notice('✅ JWT generation successful! Connection works.');
-						console.log('[Ghost Debug] ✅ JWT and connection working');
+						new Notice('JWT generation successful! Connection works.');
+						console.debug('[Ghost Debug] JWT and connection working');
 					} else {
-						new Notice('❌ Connection failed - check console for details');
-						console.log('[Ghost Debug] ❌ Connection failed');
+						new Notice('Connection failed - check console for details');
+						console.debug('[Ghost Debug] Connection failed');
 					}
 				} catch (error) {
 					console.error('[Ghost Debug] Error:', error);
-					new Notice(`❌ Error: ${error.message}`);
+					new Notice(`Error: ${(error as Error).message}`);
 				}
 			}
 		});
@@ -187,24 +187,28 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add debug command to show file content and metadata
 		this.addCommand({
 			id: 'debug-show-file-data',
-			name: 'Debug: Show file content and metadata',
-			editorCallback: async (editor, view) => {
+			name: 'Debug: show file content and metadata',
+			editorCallback: (editor, view) => {
 				if (!view.file) {
 					new Notice('No active file');
 					return;
 				}
 
-				const content = await this.app.vault.read(view.file);
-				const cache = this.app.metadataCache.getFileCache(view.file);
+				void this.app.vault.read(view.file).then((content) => {
+					const cache = this.app.metadataCache.getFileCache(view.file!);
 
-				console.log('[Ghost Debug] ===== FILE DEBUG =====');
-				console.log('[Ghost Debug] File path:', view.file.path);
-				console.log('[Ghost Debug] File content:', content);
-				console.log('[Ghost Debug] Frontmatter:', cache?.frontmatter);
-				console.log('[Ghost Debug] Content length:', content.length);
-				console.log('[Ghost Debug] ===== END DEBUG =====');
+					console.debug('[Ghost Debug] ===== FILE DEBUG =====');
+					console.debug('[Ghost Debug] File path:', view.file!.path);
+					console.debug('[Ghost Debug] File content:', content);
+					console.debug('[Ghost Debug] Frontmatter:', cache?.frontmatter);
+					console.debug('[Ghost Debug] Content length:', content.length);
+					console.debug('[Ghost Debug] ===== END DEBUG =====');
 
-				new Notice('File data logged to console');
+					new Notice('File data logged to console');
+				}).catch((error: Error) => {
+					console.error('[Ghost Debug] Error reading file:', error);
+					new Notice(`Error reading file: ${error.message}`);
+				});
 			}
 		});
 	}
@@ -223,7 +227,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		}
 
 		// Only setup periodic sync if credentials are configured
-		const apiKey = await this.loadApiKey();
+		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
 			return;
 		}
@@ -231,12 +235,12 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Convert minutes to milliseconds
 		const intervalMs = this.settings.syncInterval * 60 * 1000;
 
-		console.log(`[Ghost Sync] Setting up periodic sync every ${this.settings.syncInterval} minutes`);
+		console.debug(`[Ghost Sync] Setting up periodic sync every ${this.settings.syncInterval} minutes`);
 
 		// Setup periodic sync
-		this.periodicSyncInterval = window.setInterval(async () => {
-			console.log('[Ghost Sync] Running periodic sync...');
-			await this.syncEngine.syncAllFiles();
+		this.periodicSyncInterval = window.setInterval(() => {
+			console.debug('[Ghost Sync] Running periodic sync...');
+			void this.syncEngine.syncAllFiles();
 		}, intervalMs);
 	}
 
@@ -270,19 +274,19 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 		// Restart periodic sync with new settings
-		this.setupPeriodicSync();
+		void this.setupPeriodicSync();
 	}
 
 	/**
 	 * Load Ghost Admin API Key from Obsidian Secrets
 	 */
-	async loadApiKey(): Promise<string> {
+	loadApiKey(): string {
 		if (!this.settings.ghostApiKeySecretName) {
 			console.warn('[Ghost] No secret name configured');
 			return '';
 		}
 
-		console.log('[Ghost] Attempting to load secret:', this.settings.ghostApiKeySecretName);
+		console.debug('[Ghost] Attempting to load secret:', this.settings.ghostApiKeySecretName);
 
 		try {
 			// Use the correct API: app.secretStorage.getSecret()
@@ -300,19 +304,19 @@ export default class GhostWriterManagerPlugin extends Plugin {
 				return '';
 			}
 
-			console.log('[Ghost] Successfully loaded secret (length:', apiKey.length, ')');
+			console.debug('[Ghost] Successfully loaded secret (length:', apiKey.length, ')');
 			return apiKey;
 		} catch (error) {
 			console.error('[Ghost] Error loading API key from secrets:', error);
-			new Notice(`Error loading secret: ${error.message}`);
+			new Notice(`Error loading secret: ${(error as Error).message}`);
 			return '';
 		}
 	}
 
 	async testGhostConnection(): Promise<void> {
-		const apiKey = await this.loadApiKey();
+		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure Ghost URL and Admin API Key first');
+			new Notice('Please configure Ghost URL and Admin API key first');
 			return;
 		}
 
@@ -325,14 +329,14 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			}
 		} catch (error) {
 			console.error('Ghost connection test failed:', error);
-			new Notice(`Connection failed: ${error.message}`);
+			new Notice(`Connection failed: ${(error as Error).message}`);
 		}
 	}
 
 	async syncWithGhost(): Promise<void> {
-		const apiKey = await this.loadApiKey();
+		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure Ghost URL and Admin API Key first');
+			new Notice('Please configure Ghost URL and Admin API key first');
 			return;
 		}
 
@@ -340,7 +344,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			await this.syncEngine.syncAllFiles();
 		} catch (error) {
 			console.error('Sync failed:', error);
-			new Notice(`Sync failed: ${error.message}`);
+			new Notice(`Sync failed: ${(error as Error).message}`);
 		}
 	}
 
@@ -372,7 +376,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			new Notice('New Ghost post created!');
 		} catch (error) {
 			console.error('Error creating new Ghost post:', error);
-			new Notice(`Failed to create new post: ${error.message}`);
+			new Notice(`Failed to create new post: ${(error as Error).message}`);
 		}
 	}
 
@@ -419,7 +423,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			}
 		} catch (error) {
 			console.error('Error adding Ghost properties:', error);
-			new Notice(`Failed to add Ghost properties: ${error.message}`);
+			new Notice(`Failed to add Ghost properties: ${(error as Error).message}`);
 		}
 	}
 }
@@ -437,7 +441,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		// Ghost Configuration heading
+		// Ghost configuration heading
 		new Setting(containerEl)
 			.setHeading()
 			.setName('Ghost configuration');
@@ -488,7 +492,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 					await this.plugin.testGhostConnection();
 				}));
 
-		// Sync Settings heading
+		// Sync settings heading
 		new Setting(containerEl)
 			.setHeading()
 			.setName('Sync settings');
@@ -497,7 +501,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 			.setName('Sync folder')
 			.setDesc('Folder in your vault where Ghost posts will be stored')
 			.addText(text => text
-				.setPlaceholder('Ghost Posts')
+				.setPlaceholder('Ghost posts')
 				.setValue(this.plugin.settings.syncFolder)
 				.onChange(async (value) => {
 					this.plugin.settings.syncFolder = value.trim();

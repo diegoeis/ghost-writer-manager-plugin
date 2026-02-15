@@ -2,7 +2,7 @@ import { App, TFile, Notice } from 'obsidian';
 import { GhostAPIClient } from '../ghost/api-client';
 import { GhostWriterSettings, GhostPost } from '../types';
 import { parseGhostMetadata, extractContent, updateFrontmatterWithGhostId } from '../frontmatter-parser';
-import { markdownToHtml, extractTitle, generateSlug } from '../converters/markdown-to-html';
+import { extractTitle, generateSlug } from '../converters/markdown-to-html';
 import { markdownToLexical } from '../converters/markdown-to-lexical';
 
 /**
@@ -55,26 +55,26 @@ export class SyncEngine {
 			}
 
 			// Log that we're starting sync
-			console.log(`[Ghost Sync] Starting sync for ${file.path}`);
+			console.debug(`[Ghost Sync] Starting sync for ${file.path}`);
 			this.onStatusChange?.('syncing', 'Syncing...');
 
 			// Extract markdown content (without frontmatter)
 			const markdownContent = extractContent(content);
-			console.log('[Ghost Sync] Markdown content length:', markdownContent.length);
-			console.log('[Ghost Sync] Markdown preview:', markdownContent.substring(0, 200));
+			console.debug('[Ghost Sync] Markdown content length:', markdownContent.length);
+			console.debug('[Ghost Sync] Markdown preview:', markdownContent.substring(0, 200));
 
 			// Convert to Lexical format (Ghost's editor format)
 			const lexical = markdownToLexical(markdownContent);
-			console.log('[Ghost Sync] Lexical length:', lexical.length);
-			console.log('[Ghost Sync] Lexical preview:', lexical.substring(0, 200));
+			console.debug('[Ghost Sync] Lexical length:', lexical.length);
+			console.debug('[Ghost Sync] Lexical preview:', lexical.substring(0, 200));
 
 			// Extract title
 			const title = extractTitle(markdownContent);
-			console.log('[Ghost Sync] Extracted title:', title);
+			console.debug('[Ghost Sync] Extracted title:', title);
 
 			// Generate or use existing slug
 			const slug = metadata.slug || generateSlug(title);
-			console.log('[Ghost Sync] Slug:', slug);
+			console.debug('[Ghost Sync] Slug:', slug);
 
 			// Determine status based on g_published and g_published_at
 			let status: 'draft' | 'published' | 'scheduled' = 'draft';
@@ -90,24 +90,24 @@ export class SyncEngine {
 					if (scheduledDate > now) {
 						status = 'scheduled';
 						publishedAt = scheduledDate.toISOString();
-						console.log('[Ghost Sync] Scheduling post for:', publishedAt);
+						console.debug('[Ghost Sync] Scheduling post for:', publishedAt);
 					} else {
 						// Date is in the past or now, publish immediately
 						status = 'published';
 						publishedAt = scheduledDate.toISOString();
-						console.log('[Ghost Sync] Publishing post with custom date:', publishedAt);
+						console.debug('[Ghost Sync] Publishing post with custom date:', publishedAt);
 					}
 				} else {
 					// No date specified, publish now
 					status = 'published';
-					console.log('[Ghost Sync] Publishing post immediately');
+					console.debug('[Ghost Sync] Publishing post immediately');
 				}
 			} else {
 				// g_published is false, keep as draft regardless of date
-				console.log('[Ghost Sync] Keeping post as draft (g_published: false)');
+				console.debug('[Ghost Sync] Keeping post as draft (g_published: false)');
 			}
 
-			console.log('[Ghost Sync] Final status:', status);
+			console.debug('[Ghost Sync] Final status:', status);
 
 			// Prepare Ghost post data
 			const postData: Record<string, unknown> = {
@@ -136,7 +136,7 @@ export class SyncEngine {
 			}
 
 			// Debug logging
-			console.log('[Ghost Sync] Post data to send:', {
+			console.debug('[Ghost Sync] Post data to send:', {
 				title,
 				lexical: lexical.substring(0, 200) + '...',
 				lexicalLength: lexical.length,
@@ -153,13 +153,13 @@ export class SyncEngine {
 			let ghostPost: GhostPost;
 			if (metadata.ghost_id) {
 				// Update existing post
-				console.log(`[Ghost Sync] Updating post ${metadata.ghost_id}`);
+				console.debug(`[Ghost Sync] Updating post ${metadata.ghost_id}`);
 				ghostPost = await this.ghostClient.updatePost(metadata.ghost_id, postData);
 				if (this.settings.showSyncNotifications) {
-					new Notice(`✅ Updated in Ghost: ${title}`);
+					new Notice(`Updated in Ghost: ${title}`);
 				}
-				console.log(`[Ghost Sync] ✅ Updated: ${title}`);
-				console.log('[Ghost Sync] Ghost returned post:', {
+				console.debug(`[Ghost Sync] Updated: ${title}`);
+				console.debug('[Ghost Sync] Ghost returned post:', {
 					id: ghostPost.id,
 					title: ghostPost.title,
 					htmlLength: ghostPost.html?.length || 0,
@@ -167,25 +167,29 @@ export class SyncEngine {
 				});
 			} else {
 				// Create new post
-				console.log(`[Ghost Sync] Creating new post`);
+				console.debug('[Ghost Sync] Creating new post');
 				ghostPost = await this.ghostClient.createPost(postData);
 				if (this.settings.showSyncNotifications) {
-					new Notice(`✅ Created in Ghost: ${title}`);
+					new Notice(`Created in Ghost: ${title}`);
 				}
-				console.log(`[Ghost Sync] ✅ Created: ${title}`, ghostPost);
+				console.debug(`[Ghost Sync] Created: ${title}`, ghostPost);
 
 				// IMPORTANT: Don't trigger another sync by modifying the file immediately
 				// Wait a bit to avoid the debounced sync from being called again
-				setTimeout(async () => {
+				const capturedGhostPost = ghostPost;
+				setTimeout(() => {
 					// Update file with Ghost ID and slug
 					const updatedContent = updateFrontmatterWithGhostId(
 						content,
-						ghostPost.id,
-						ghostPost.slug,
+						capturedGhostPost.id,
+						capturedGhostPost.slug,
 						this.settings.yamlPrefix
 					);
-					await this.app.vault.modify(file, updatedContent);
-					console.log('[Ghost Sync] Frontmatter updated with Ghost ID');
+					void this.app.vault.modify(file, updatedContent).then(() => {
+						console.debug('[Ghost Sync] Frontmatter updated with Ghost ID');
+					}).catch((err: Error) => {
+						console.error('[Ghost Sync] Failed to update frontmatter:', err);
+					});
 				}, 3000); // Wait 3 seconds (longer than debounce timeout)
 			}
 
@@ -195,11 +199,11 @@ export class SyncEngine {
 			this.onStatusChange?.('success', `Synced: ${title}`);
 			return true;
 		} catch (error) {
-			console.error(`[Ghost Sync] ❌ Error syncing ${file.path}:`, error);
+			console.error(`[Ghost Sync] Error syncing ${file.path}:`, error);
 			if (this.settings.showSyncNotifications) {
-				new Notice(`❌ Failed to sync ${file.name}: ${error.message}`);
+				new Notice(`Failed to sync ${file.name}: ${(error as Error).message}`);
 			}
-			this.onStatusChange?.('error', `Error: ${error.message}`);
+			this.onStatusChange?.('error', `Error: ${(error as Error).message}`);
 			return false;
 		}
 	}
@@ -243,7 +247,7 @@ export class SyncEngine {
 			new Notice(`Sync complete: ${results.success} succeeded, ${results.failed} skipped/failed`);
 		} catch (error) {
 			console.error('[Ghost Sync] Error in syncAllFiles:', error);
-			new Notice(`Sync failed: ${error.message}`);
+			new Notice(`Sync failed: ${(error as Error).message}`);
 		}
 
 		return results;

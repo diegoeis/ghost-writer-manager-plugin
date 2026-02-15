@@ -102,7 +102,7 @@ export function removeOldGhostProperties(frontmatter: string, currentPrefix: str
 				// If prefix is different from current, skip this line
 				if (linePrefix !== currentPrefix) {
 					isOldGhostProperty = true;
-					console.log(`[Ghost] Removing old property: ${line.trim()} (old prefix: "${linePrefix}", new prefix: "${currentPrefix}")`);
+					console.debug(`[Ghost] Removing old property: ${line.trim()} (old prefix: "${linePrefix}", new prefix: "${currentPrefix}")`);
 					break;
 				}
 			}

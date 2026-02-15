@@ -39,10 +39,10 @@ export class GhostAPIClient {
 			throw new Error('Invalid Admin API key format. Expected format: id:secret');
 		}
 
-		console.log('[Ghost JWT] Generating token...');
-		console.log('[Ghost JWT] ID length:', id.length);
-		console.log('[Ghost JWT] Secret length:', secret.length);
-		console.log('[Ghost JWT] Secret is hex?', /^[0-9a-f]+$/i.test(secret));
+		console.debug('[Ghost JWT] Generating token...');
+		console.debug('[Ghost JWT] ID length:', id.length);
+		console.debug('[Ghost JWT] Secret length:', secret.length);
+		console.debug('[Ghost JWT] Secret is hex?', /^[0-9a-f]+$/i.test(secret));
 
 		// Generate JWT token
 		// Header (order matters for some JWT implementations)
@@ -59,23 +59,23 @@ export class GhostAPIClient {
 			aud: '/admin/'
 		};
 
-		console.log('[Ghost JWT] Payload:', payload);
+		console.debug('[Ghost JWT] Payload:', payload);
 
 		// Encode header and payload
 		const encodedHeader = this.base64UrlEncode(JSON.stringify(header));
 		const encodedPayload = this.base64UrlEncode(JSON.stringify(payload));
 
-		console.log('[Ghost JWT] Encoded header:', encodedHeader);
-		console.log('[Ghost JWT] Encoded payload:', encodedPayload);
+		console.debug('[Ghost JWT] Encoded header:', encodedHeader);
+		console.debug('[Ghost JWT] Encoded payload:', encodedPayload);
 
 		// Create signature
 		const unsignedToken = `${encodedHeader}.${encodedPayload}`;
 		const signature = await this.createSignature(unsignedToken, secret);
 
-		console.log('[Ghost JWT] Signature:', signature);
+		console.debug('[Ghost JWT] Signature:', signature);
 
 		const token = `${unsignedToken}.${signature}`;
-		console.log('[Ghost JWT] Final token length:', token.length);
+		console.debug('[Ghost JWT] Final token length:', token.length);
 
 		return token;
 	}
@@ -97,7 +97,7 @@ export class GhostAPIClient {
 	private hexToBuffer(hex: string): Uint8Array {
 		const bytes = new Uint8Array(hex.length / 2);
 		for (let i = 0; i < hex.length; i += 2) {
-			bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
+			bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
 		}
 		return bytes;
 	}
@@ -112,10 +112,10 @@ export class GhostAPIClient {
 		const keyData = this.hexToBuffer(secret);
 		const messageData = encoder.encode(data);
 
-		// Import key
+		// Import key - buffer coercion needed for TypeScript compatibility
 		const key = await crypto.subtle.importKey(
 			'raw',
-			keyData as BufferSource,
+			keyData.buffer as ArrayBuffer,
 			{ name: 'HMAC', hash: 'SHA-256' },
 			false,
 			['sign']
@@ -259,9 +259,9 @@ export class GhostAPIClient {
 				updated_at: currentPost.updated_at
 			};
 
-			console.log('[Ghost API] Sending update with fields:', Object.keys(postWithVersion));
-			console.log('[Ghost API] Excerpt value:', postWithVersion.excerpt);
-			console.log('[Ghost API] Full post data:', JSON.stringify(postWithVersion, null, 2).substring(0, 500));
+			console.debug('[Ghost API] Sending update with fields:', Object.keys(postWithVersion));
+			console.debug('[Ghost API] Excerpt value:', postWithVersion.excerpt);
+			console.debug('[Ghost API] Full post data:', JSON.stringify(postWithVersion, null, 2).substring(0, 500));
 
 			const response = await this.makeRequest(`/posts/${postId}/`, 'PUT', { posts: [postWithVersion] });
 
