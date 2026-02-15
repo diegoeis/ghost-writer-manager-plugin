@@ -5,6 +5,22 @@ All notable changes to the Ghost Writer Manager plugin will be documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Replace all `console.log` calls with `console.debug` for production compliance (60+ occurrences)
+- Resolve floating promises with `void` operator and `.then()/.catch()` patterns
+- Fix async `editorCallback` functions that had no `await` (made synchronous)
+- Replace deprecated `substr()` with `substring()` in API client
+- Fix unnecessary regex escape characters in markdown-to-lexical converter
+- Remove unsafe `as BufferSource` type assertion; use `keyData.buffer as ArrayBuffer` instead
+- Fix potential `[object Object]` stringification in frontmatter parser for excerpt, feature_image, and published_at
+- Remove unused imports (`TFolder`, `hasGhostProperties`, `GhostPostStatus`, `markdownToHtml`)
+- Fix emoji characters in Notice messages (replaced with plain text)
+- Fix `error.message` references to use proper `(error as Error).message` casting
+- Enforce sentence case in all UI command names and placeholders
+- Add `aria-label` to Keychain icon button for screen reader accessibility (Rule 22)
+
 ## [0.1.0] - 2026-02-09
 
 ### Added
