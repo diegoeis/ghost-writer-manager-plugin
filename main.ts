@@ -479,6 +479,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 							// @ts-ignore - Navigate to Keychain tab
 							this.app.setting.openTabById('keychain');
 						});
+					button.extraSettingsEl.setAttribute('aria-label', 'Open Keychain settings');
 				});
 			});
 
