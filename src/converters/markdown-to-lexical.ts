@@ -27,6 +27,10 @@ interface LexicalNode {
 	alt?: string;
 	width?: number | null;
 	height?: number | null;
+	// Code block card fields
+	code?: string;
+	language?: string;
+	caption?: string;
 }
 
 interface LexicalDocument {
@@ -95,14 +99,19 @@ export function markdownToLexical(markdown: string): string {
 
 		// Code block
 		if (line.startsWith('```')) {
+			// Extract language from opening fence (e.g., ```javascript)
+			const language = line.slice(3).trim();
 			const codeLines: string[] = [];
 			i++; // Skip opening ```
-			while (i < lines.length && !lines[i].startsWith('```')) {
+			while (i < lines.length && lines[i].trimEnd() !== '```') {
 				codeLines.push(lines[i]);
 				i++;
 			}
-			i++; // Skip closing ```
-			nodes.push(createCodeBlock(codeLines.join('\n')));
+			// Only skip closing ``` if we found it (not end of file)
+			if (i < lines.length) {
+				i++; // Skip closing ```
+			}
+			nodes.push(createCodeBlock(codeLines.join('\n'), language));
 			continue;
 		}
 
@@ -239,24 +248,15 @@ function createOrderedList(items: string[]): LexicalNode {
 }
 
 /**
- * Create a code block node
+ * Create a code block node using Ghost's codeblock card format
  */
-function createCodeBlock(code: string): LexicalNode {
+function createCodeBlock(code: string, language: string): LexicalNode {
 	return {
-		type: 'code',
+		type: 'codeblock',
 		version: 1,
-		children: [{
-			type: 'extended-text',
-			text: code,
-			version: 1,
-			detail: 0,
-			format: 0,
-			mode: 'normal',
-			style: ''
-		}],
-		direction: 'ltr',
-		format: '',
-		indent: 0
+		code,
+		language: language || '',
+		caption: ''
 	};
 }
 
