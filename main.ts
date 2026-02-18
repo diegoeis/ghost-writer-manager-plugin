@@ -189,16 +189,17 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			id: 'debug-show-file-data',
 			name: 'Debug: show file content and metadata',
 			editorCallback: (editor, view) => {
-				if (!view.file) {
+				const file = view.file;
+				if (!file) {
 					new Notice('No active file');
 					return;
 				}
 
-				void this.app.vault.read(view.file).then((content) => {
-					const cache = this.app.metadataCache.getFileCache(view.file!);
+				void this.app.vault.read(file).then((content) => {
+					const cache = this.app.metadataCache.getFileCache(file);
 
 					console.debug('[Ghost Debug] ===== FILE DEBUG =====');
-					console.debug('[Ghost Debug] File path:', view.file!.path);
+					console.debug('[Ghost Debug] File path:', file.path);
 					console.debug('[Ghost Debug] File content:', content);
 					console.debug('[Ghost Debug] Frontmatter:', cache?.frontmatter);
 					console.debug('[Ghost Debug] Content length:', content.length);
@@ -220,7 +221,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		}
 	}
 
-	async setupPeriodicSync() {
+	setupPeriodicSync() {
 		// Clear existing interval if any
 		if (this.periodicSyncInterval) {
 			window.clearInterval(this.periodicSyncInterval);

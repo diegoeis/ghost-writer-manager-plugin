@@ -71,19 +71,23 @@ export function parseGhostMetadata(
 	console.debug('[Ghost Parse] Featured value:', get('featured'), '=> parsed:', featured);
 	console.debug('[Ghost Parse] Published value:', get('published'), '=> parsed:', published);
 
+	// Helper to safely convert unknown to string (returns '' for objects/arrays/null/undefined)
+	const toSafeString = (value: unknown): string => {
+		if (typeof value === 'string') return value.trim();
+		if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+		return '';
+	};
+
 	// Parse excerpt and feature_image (only if not empty)
 	console.debug('[Ghost Parse] Excerpt raw value:', get('excerpt'));
-	const rawExcerpt = get('excerpt');
-	const excerpt = rawExcerpt && typeof rawExcerpt === 'string' && rawExcerpt.trim() !== '' ? rawExcerpt : (rawExcerpt && typeof rawExcerpt !== 'object' ? String(rawExcerpt) : '');
-
-	const rawFeatureImage = get('feature_image');
-	const feature_image = rawFeatureImage && typeof rawFeatureImage === 'string' && rawFeatureImage.trim() !== '' ? rawFeatureImage : (rawFeatureImage && typeof rawFeatureImage !== 'object' ? String(rawFeatureImage) : '');
+	const excerpt = toSafeString(get('excerpt'));
+	const feature_image = toSafeString(get('feature_image'));
 
 	console.debug('[Ghost Parse] Excerpt parsed:', excerpt, '(length:', excerpt.length, ')');
 
 	// Parse published_at (optional date for scheduling)
-	const rawPublishedAt = get('published_at');
-	const published_at = rawPublishedAt && typeof rawPublishedAt !== 'object' ? String(rawPublishedAt) : undefined;
+	const publishedAtStr = toSafeString(get('published_at'));
+	const published_at = publishedAtStr !== '' ? publishedAtStr : undefined;
 
 	return {
 		post_access,
