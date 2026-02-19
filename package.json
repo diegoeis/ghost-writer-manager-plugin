@@ -19,12 +19,14 @@
 	"author": "Diego Eis",
 	"license": "MIT",
 	"devDependencies": {
+		"@eslint/json": "^1.0.1",
 		"@types/node": "^20.10.0",
 		"@typescript-eslint/eslint-plugin": "^6.13.0",
 		"@typescript-eslint/parser": "^6.13.0",
 		"builtin-modules": "^3.3.0",
 		"esbuild": "^0.19.8",
 		"eslint": "^8.54.0",
+		"eslint-plugin-obsidianmd": "^0.1.9",
 		"obsidian": "latest",
 		"tslib": "^2.6.2",
 		"typescript": "^5.3.2"
