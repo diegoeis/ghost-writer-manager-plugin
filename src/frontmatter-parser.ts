@@ -54,7 +54,7 @@ export function parseGhostMetadata(
 	let tags: string[] = [];
 	const rawTags = get('tags');
 	if (Array.isArray(rawTags)) {
-		tags = rawTags.filter(t => typeof t === 'string') as string[];
+		tags = rawTags.filter((t): t is string => typeof t === 'string');
 	}
 
 	// Parse boolean values properly (Obsidian can store as true/false or "true"/"false")
