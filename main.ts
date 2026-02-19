@@ -3,6 +3,7 @@ import { GhostWriterSettings, DEFAULT_SETTINGS } from './src/types';
 import { GhostAPIClient } from './src/ghost/api-client';
 import { generateNewPostTemplate, addGhostPropertiesToContent } from './src/templates';
 import { SyncEngine } from './src/sync/sync-engine';
+import { CalendarView, CALENDAR_VIEW_TYPE } from './src/views/calendar-view';
 
 // ⚠️ IMPORTANT: Set to false before production build/release
 // Development mode flag - enables auto-sync on file changes (2s debounce)
@@ -68,8 +69,26 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Setup periodic sync
 		void this.setupPeriodicSync();
 
+		// Register editorial calendar view
+		this.registerView(
+			CALENDAR_VIEW_TYPE,
+			(leaf) => new CalendarView(leaf, this.settings, this.ghostClient)
+		);
+
+		// Ribbon icon to open editorial calendar
+		this.addRibbonIcon('calendar-days', 'Open ghost editorial calendar', () => {
+			void this.activateCalendarView();
+		});
+
 		// Add settings tab
 		this.addSettingTab(new GhostWriterSettingTab(this.app, this));
+
+		// Add command to open editorial calendar
+		this.addCommand({
+			id: 'open-editorial-calendar',
+			name: 'Open editorial calendar',
+			callback: () => { void this.activateCalendarView(); }
+		});
 
 		// Add command to manually sync
 		this.addCommand({
@@ -212,6 +231,18 @@ export default class GhostWriterManagerPlugin extends Plugin {
 				});
 			}
 		});
+	}
+
+	async activateCalendarView(): Promise<void> {
+		const existing = this.app.workspace.getLeavesOfType(CALENDAR_VIEW_TYPE);
+		if (existing.length > 0) {
+			this.app.workspace.revealLeaf(existing[0]);
+			return;
+		}
+		const leaf = this.app.workspace.getRightLeaf(false);
+		if (!leaf) return;
+		await leaf.setViewState({ type: CALENDAR_VIEW_TYPE, active: true });
+		this.app.workspace.revealLeaf(leaf);
 	}
 
 	onunload() {
@@ -449,7 +480,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Ghost URL')
-			.setDesc('Your Ghost site URL (e.g., https://yourblog.ghost.io)')
+			.setDesc('Your ghost site URL (e.g., https://yourblog.ghost.io)')
 			.addText(text => text
 				.setPlaceholder('https://yourblog.ghost.io')
 				.setValue(this.plugin.settings.ghostUrl)
@@ -460,7 +491,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Admin API key secret name')
-			.setDesc('Name of the secret in Settings → Keychain that contains your Ghost Admin API key (format: id:secret)')
+			.setDesc('Name of the secret in settings → keychain that contains your ghost admin API key (format: id:secret)')
 			.addText(text => text
 				.setPlaceholder('ghost-api-key')
 				.setValue(this.plugin.settings.ghostApiKeySecretName)
@@ -473,20 +504,20 @@ class GhostWriterSettingTab extends PluginSettingTab {
 				setting.addExtraButton((button) => {
 					button
 						.setIcon('key')
-						.setTooltip('Open Keychain settings')
+						.setTooltip('Open keychain settings')
 						.onClick(() => {
 							// @ts-ignore - Open settings tab
 							this.app.setting.open();
 							// @ts-ignore - Navigate to Keychain tab
 							this.app.setting.openTabById('keychain');
 						});
-					button.extraSettingsEl.setAttribute('aria-label', 'Open Keychain settings');
+					button.extraSettingsEl.setAttribute('aria-label', 'Open keychain settings');
 				});
 			});
 
 		new Setting(containerEl)
 			.setName('Test connection')
-			.setDesc('Verify that your Ghost credentials are working')
+			.setDesc('Verify that your ghost credentials are working')
 			.addButton(button => button
 				.setButtonText('Test connection')
 				.setCta()
@@ -501,7 +532,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Sync folder')
-			.setDesc('Folder in your vault where Ghost posts will be stored')
+			.setDesc('Folder in your vault where ghost posts will be stored')
 			.addText(text => text
 				.setPlaceholder('Ghost posts')
 				.setValue(this.plugin.settings.syncFolder)
@@ -526,7 +557,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('YAML prefix')
-			.setDesc('Prefix for Ghost metadata in YAML frontmatter (e.g., "ghost_" will create ghost_status, ghost_tags)')
+			.setDesc('Prefix for ghost metadata in YAML frontmatter (e.g., "ghost_" will create ghost_status, ghost_tags)')
 			.addText(text => text
 				.setPlaceholder('ghost_')
 				.setValue(this.plugin.settings.yamlPrefix)

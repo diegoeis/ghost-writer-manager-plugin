@@ -185,9 +185,9 @@ export class GhostAPIClient {
 	/**
 	 * Get all posts
 	 */
-	async getPosts(filter?: string): Promise<GhostPost[]> {
+	async getPosts(filter?: string, limit: number | 'all' = 15): Promise<GhostPost[]> {
 		try {
-			let endpoint = '/posts/?formats=html,lexical&include=tags';
+			let endpoint = `/posts/?formats=html,lexical&include=tags&limit=${limit}`;
 			if (filter) {
 				endpoint += `&filter=${encodeURIComponent(filter)}`;
 			}

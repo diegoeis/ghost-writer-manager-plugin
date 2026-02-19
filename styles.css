@@ -122,3 +122,328 @@
 		margin-bottom: var(--size-2-1);
 	}
 }
+
+/* ─── Editorial Calendar Grid View ─────────────────────────────────────────── */
+
+/* Navigation bar */
+.ghost-calendar-nav {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--size-2-1);
+	margin-bottom: var(--size-4-2);
+}
+
+/* Month/Year label */
+.ghost-calendar-month-label {
+	flex: 1;
+	text-align: center;
+	font-weight: var(--font-semibold);
+	font-size: var(--font-ui-medium);
+	color: var(--text-normal);
+}
+
+/* Navigation and refresh icon buttons */
+.ghost-calendar-nav-btn,
+.ghost-calendar-refresh-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	background: transparent;
+	border: none;
+	border-radius: var(--radius-s);
+	color: var(--text-muted);
+	cursor: pointer;
+}
+
+
+.ghost-calendar-nav-btn:hover,
+.ghost-calendar-refresh-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+}
+
+.ghost-calendar-nav-btn:focus-visible,
+.ghost-calendar-refresh-btn:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+/* Toolbar row (Today + Refresh) */
+.ghost-calendar-toolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: var(--size-4-1);
+}
+
+/* Today button */
+.ghost-calendar-today-btn {
+	padding: 2px var(--size-4-2);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-medium);
+	color: var(--text-muted);
+	background: transparent;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	line-height: 1.6;
+}
+
+.ghost-calendar-today-btn:hover {
+	background: var(--background-modifier-hover);
+	color: var(--text-normal);
+	border-color: var(--background-modifier-border-hover);
+}
+
+.ghost-calendar-today-btn:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+.ghost-calendar-refresh-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+}
+
+/* Weekday header row */
+.ghost-calendar-weekdays {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	margin-bottom: var(--size-2-1);
+	border-bottom: 1px solid var(--background-modifier-border);
+	padding-bottom: var(--size-4-2);
+}
+
+.ghost-calendar-weekday {
+	text-align: center;
+	font-size: var(--font-ui-smaller);
+	color: var(--text-muted);
+	font-weight: var(--font-medium);
+	padding: var(--size-2-1) 0;
+}
+
+/* Calendar grid */
+.ghost-calendar-grid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 2px;
+}
+
+/* Individual day cell */
+.ghost-calendar-day-cell {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 38px;
+	border-radius: var(--radius-s);
+}
+
+.ghost-calendar-day-empty {
+	background: transparent;
+}
+
+.ghost-calendar-day-cell.ghost-calendar-day-has-posts {
+	background: var(--background-secondary);
+	cursor: pointer;
+}
+
+.ghost-calendar-day-cell.ghost-calendar-day-has-posts:hover {
+	background: var(--background-modifier-hover);
+}
+
+.ghost-calendar-day-cell.ghost-calendar-day-has-posts:hover .ghost-calendar-day-number {
+	color: var(--text-normal);
+}
+
+.ghost-calendar-day-cell.ghost-calendar-day-has-posts:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}
+
+.ghost-calendar-day-cell.ghost-calendar-day-selected {
+	background: var(--background-modifier-hover);
+}
+
+.ghost-calendar-day-cell.ghost-calendar-day-selected .ghost-calendar-day-number {
+	color: var(--text-normal);
+}
+
+/* Today indicator — uses border-modifier color (same as hover bg) */
+.ghost-calendar-day-cell.ghost-calendar-day-today {
+	box-shadow: inset 0 0 0 1.5px var(--background-modifier-border-hover);
+}
+
+.ghost-calendar-day-cell.ghost-calendar-day-today .ghost-calendar-day-number {
+	color: var(--interactive-accent);
+	font-weight: var(--font-semibold);
+}
+
+/* Keep today indicator visible when selected */
+.ghost-calendar-day-cell.ghost-calendar-day-today.ghost-calendar-day-selected {
+	box-shadow: inset 0 0 0 1.5px var(--background-modifier-border-hover);
+}
+
+/* Day number */
+.ghost-calendar-day-number {
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	line-height: 1;
+	position: relative;
+	display: inline-block;
+}
+
+/* Bold for days with posts */
+.ghost-calendar-day-cell.ghost-calendar-day-has-posts .ghost-calendar-day-number {
+	font-weight: var(--font-semibold);
+}
+
+/*
+ * Dots via pseudo-elements on .ghost-calendar-day-number
+ * ::before = published (accent), ::after = scheduled (green)
+ * Position: below the number, centered
+ */
+.ghost-calendar-day-number::before,
+.ghost-calendar-day-number::after {
+	content: '';
+	display: block;
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	position: absolute;
+	bottom: -8px;
+}
+
+/* Only one dot: center it */
+.ghost-calendar-day-number--published::before {
+	background: var(--interactive-accent);
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+.ghost-calendar-day-number--scheduled::after {
+	background: var(--color-green);
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+/* Both dots: offset them to sit side by side */
+.ghost-calendar-day-number--published.ghost-calendar-day-number--scheduled::before {
+	left: calc(50% - 5px);
+	transform: none;
+}
+
+.ghost-calendar-day-number--published.ghost-calendar-day-number--scheduled::after {
+	background: var(--color-green);
+	left: calc(50% + 1px);
+	transform: none;
+}
+
+/* Selected bg is the same as hover, so dots keep their natural colors */
+
+/* Post list below the grid */
+.ghost-calendar-post-list {
+	margin-top: var(--size-4-4);
+	border-top: 1px solid var(--background-modifier-border);
+	padding-top: var(--size-4-2);
+}
+
+.ghost-calendar-day-group {
+	margin-bottom: var(--size-4-4);
+}
+
+.ghost-calendar-list-header {
+	margin-bottom: var(--size-4-2);
+}
+
+.ghost-calendar-list-date {
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-semibold);
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+/* Individual post item row */
+.ghost-calendar-post-item {
+	display: flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	padding: var(--size-4-2);
+	margin-bottom: var(--size-2-1);
+	border-radius: var(--radius-s);
+}
+
+.ghost-calendar-post-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+/* Status badge */
+.ghost-calendar-post-status {
+	padding: 2px var(--size-4-1);
+	border-radius: var(--radius-s);
+	font-size: var(--font-ui-smaller);
+	font-weight: var(--font-medium);
+	white-space: nowrap;
+	flex-shrink: 0;
+}
+
+.ghost-calendar-post-status--published {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.ghost-calendar-post-status--scheduled {
+	background: var(--background-modifier-success);
+	color: var(--text-on-accent);
+}
+
+/* Post title link */
+.ghost-calendar-post-link {
+	flex: 1;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	text-decoration: none;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.ghost-calendar-post-link:hover {
+	color: var(--interactive-accent);
+	text-decoration: underline;
+}
+
+.ghost-calendar-post-link:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+	border-radius: var(--radius-s);
+}
+
+/* External link icon */
+.ghost-calendar-post-external {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	color: var(--text-faint);
+	flex-shrink: 0;
+}
+
+.ghost-calendar-post-external:hover {
+	color: var(--interactive-accent);
+}
+
+.ghost-calendar-post-external:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+	border-radius: var(--radius-s);
+}

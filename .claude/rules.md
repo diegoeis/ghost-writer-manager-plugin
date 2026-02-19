@@ -23,6 +23,7 @@
 1. **Read submission guidelines**: https://github.com/obsidianmd/obsidian-releases/blob/master/README.md
 2. **Follow plugin review checklist**: https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
 3. **Add to END of community-plugins.json**: NOT alphabetically, but at the END of the array
+4. **Use the ESLint plugin for Obsidian**: https://github.com/obsidianmd/eslint-plugin
 
 ### Rule 2: No Assumptions Without Verification
 
