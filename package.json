@@ -1,6 +1,6 @@
 {
 	"name": "ghost-writer-manager",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Synchronize posts bidirectionally between Ghost CMS and Obsidian with editorial calendar and YAML metadata control.",
 	"main": "main.js",
 	"scripts": {
