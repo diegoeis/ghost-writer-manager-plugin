@@ -1,3 +1,51 @@
+# Ghost Writer Manager 0.2.1
+
+Patch release with type safety and lint fixes introduced in 0.2.0.
+
+## Fixed
+
+- Replace `TFile` type cast with safe `instanceof` narrowing when opening vault notes from the calendar
+- Remove unnecessary `async` from `onClose` (no `await` expression)
+- Add explicit `void` operator to unhandled `revealLeaf` promises in `activateCalendarView`
+
+---
+
+**Full changelog**: https://github.com/diegoeis/ghost-writer-manager-plugin/compare/0.2.0...0.2.1
+
+---
+
+# Ghost Writer Manager 0.2.0
+
+Introduces the editorial calendar — a sidebar view to see and navigate all your Ghost posts for the month without leaving Obsidian.
+
+## What's new
+
+### Editorial calendar
+
+Open the calendar from the ribbon or via `Cmd/Ctrl + P` → "Open Ghost editorial calendar". It shows a monthly grid of all your published and scheduled posts with at-a-glance status indicators:
+
+- **Purple dot** — post is published
+- **Green dot** — post is scheduled for a future date
+- **Both dots side by side** — day has both types
+
+Day numbers are bold when they have posts. The current day is highlighted with a subtle grey border.
+
+### Post list and navigation
+
+Below the grid, all posts for the month are listed and grouped by day. Click a day cell to filter the list to that day only; click it again to go back to the full month view. Click a post title to open the linked vault note in a new Obsidian tab, or use the external link icon to jump straight to Ghost Admin.
+
+Use the navigation arrows to browse months and years, or hit **Today** to return to the current month instantly.
+
+## Installation
+
+Download `main.js`, `manifest.json`, and `styles.css` from this release and copy them to `.obsidian/plugins/ghost-writer-manager/` in your vault.
+
+---
+
+**Full changelog**: https://github.com/diegoeis/ghost-writer-manager-plugin/compare/0.1.2...0.2.0
+
+---
+
 # Ghost Writer Manager v0.1.0 🚀
 
 First stable release of Ghost Writer Manager - A powerful Obsidian plugin for synchronizing your notes to Ghost CMS.

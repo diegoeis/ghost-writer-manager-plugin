@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-02-19
+
+### Fixed
+- Replace `TFile` type cast with safe `instanceof` narrowing when opening vault notes from calendar
+- Remove unnecessary `async` from `onClose` (no await expression)
+- Add explicit `void` operator to unhandled `revealLeaf` promises in `activateCalendarView`
+
+## [0.2.0] - 2026-02-19
+
+### Added
+- Editorial calendar sidebar view (`CalendarView`) showing all published and scheduled posts for the current month
+- Monthly grid with navigation buttons (previous/next month and year)
+- Status dots on day cells via CSS pseudo-elements: purple for published posts, green for scheduled, both when mixed
+- Bold day numbers for days that have posts
+- Click a day cell to filter the post list to that day; click again to deselect and show all
+- Today button to return to the current month
+- Current day highlighted with a subtle grey border
+- Post list grouped by day, each entry showing status badge, title and external link to Ghost Admin
+- Post titles with linked vault notes open in a new Obsidian tab
+- Full keyboard navigation and ARIA labels for accessibility
+- "Open Ghost editorial calendar" command
+
+## [0.1.2] - 2026-02-18
+
 ### Fixed
 - Replace all `console.log` calls with `console.debug` for production compliance (60+ occurrences)
 - Resolve floating promises with `void` operator and `.then()/.catch()` patterns
@@ -74,4 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No support for Ghost pages (posts only)
 - No media upload support yet
 
+[0.2.1]: https://github.com/diegoeis/ghost-writer-manager-plugin/compare/0.2.0...0.2.1
+[0.2.0]: https://github.com/diegoeis/ghost-writer-manager-plugin/compare/0.1.2...0.2.0
+[0.1.2]: https://github.com/diegoeis/ghost-writer-manager-plugin/compare/0.1.0...0.1.2
 [0.1.0]: https://github.com/diegoeis/ghost-writer-manager-plugin/releases/tag/0.1.0

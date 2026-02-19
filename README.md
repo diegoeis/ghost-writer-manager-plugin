@@ -1,10 +1,11 @@
 # Ghost Writer Manager
 
-One-way synchronization from Obsidian to Ghost CMS with post scheduling, YAML metadata control, and automatic sync.
+One-way synchronization from Obsidian to Ghost CMS with post scheduling, YAML metadata control, automatic sync, and an editorial calendar view.
 
 ## Features
 
 - 🔄 **One-way sync** from Obsidian to Ghost (keeps Ghost as your publishing platform)
+- 📅 **Editorial calendar** - Sidebar view of all scheduled and published posts for the month
 - 📝 **YAML frontmatter control** - Manage all Ghost metadata directly in Obsidian
 - 🕐 **Post scheduling** - Schedule posts for future publication with `g_published_at`
 - 🔄 **Automatic sync** - Debounced sync on file save (2s delay)
@@ -91,12 +92,25 @@ One-way synchronization from Obsidian to Ghost CMS with post scheduling, YAML me
 
 ## Usage
 
+### Editorial Calendar
+
+Open the editorial calendar from the ribbon icon or via `Cmd/Ctrl + P` → "Open Ghost editorial calendar". The sidebar shows all published and scheduled posts for the current month:
+
+- **Purple dot** — post is published
+- **Green dot** — post is scheduled
+- **Both dots** — day has both published and scheduled posts
+- Click a day to filter the post list to that day; click again to show all
+- Click a post title to open the linked vault note in a new tab
+- Click the external link icon to open the post directly in Ghost Admin
+- Use the **Today** button to return to the current month
+
 ### Commands
 
 Available commands (Cmd/Ctrl + P):
 
 - **Sync with Ghost** - Manually sync all files in sync folder
 - **Test Ghost connection** - Verify your Ghost credentials
+- **Open Ghost editorial calendar** - Open the calendar sidebar view
 - **Create new Ghost post** - Generate new post with Ghost properties template
 - **Add Ghost properties to current note** - Add Ghost properties to existing note
 - **Sync current note to Ghost** - Force sync of active file
@@ -142,8 +156,11 @@ ghost-writer-manager-plugin/
 ├── main.ts                 # Main plugin file
 ├── src/
 │   ├── types.ts           # TypeScript interfaces
-│   └── ghost/
-│       └── api-client.ts  # Ghost Admin API client
+│   ├── ghost/
+│   │   └── api-client.ts  # Ghost Admin API client
+│   └── views/
+│       └── calendar-view.ts  # Editorial calendar sidebar
+├── styles.css             # Plugin styles
 ├── manifest.json          # Plugin manifest
 ├── package.json           # Dependencies
 └── tsconfig.json          # TypeScript config
@@ -188,9 +205,11 @@ const DEV_MODE = true; // Set to false for production builds
 - [x] Manual sync commands
 - [x] Development mode with auto-sync (debounced)
 
+### ✅ Completed (v0.2.0)
+- [x] Editorial calendar sidebar view
+
 ### 🚧 Future Features
 - [ ] Two-way sync (Ghost → Obsidian)
-- [ ] Editorial calendar view
 - [ ] Ghost pages support
 - [ ] Media upload support
 - [ ] Conflict resolution
