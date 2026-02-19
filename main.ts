@@ -159,7 +159,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			callback: async () => {
 				const apiKey = this.loadApiKey();
 				if (!this.settings.ghostUrl || !apiKey) {
-					new Notice('Please configure Ghost URL and Admin API key first');
+					new Notice('Please configure ghost URL and admin API key first');
 					return;
 				}
 
@@ -293,7 +293,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			// Use the correct API: app.secretStorage.getSecret()
 			if (!this.app.secretStorage) {
 				console.error('[Ghost] app.secretStorage is not available. Obsidian version may be too old.');
-				new Notice('Obsidian Secrets API not available. Please update Obsidian to the latest version.');
+				new Notice('Obsidian secrets API not available. Please update Obsidian to the latest version.');
 				return '';
 			}
 
@@ -317,16 +317,16 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async testGhostConnection(): Promise<void> {
 		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure Ghost URL and Admin API key first');
+			new Notice('Please configure ghost URL and admin API key first');
 			return;
 		}
 
 		try {
 			const isValid = await this.ghostClient.testConnection();
 			if (isValid) {
-				new Notice('Successfully connected to Ghost!');
+				new Notice('Successfully connected to ghost!');
 			} else {
-				new Notice('Failed to connect to Ghost. Please check your credentials.');
+				new Notice('Failed to connect to ghost. Please check your credentials.');
 			}
 		} catch (error) {
 			console.error('Ghost connection test failed:', error);
@@ -337,7 +337,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async syncWithGhost(): Promise<void> {
 		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure Ghost URL and Admin API key first');
+			new Notice('Please configure ghost URL and admin API key first');
 			return;
 		}
 
@@ -374,7 +374,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			const leaf = this.app.workspace.getLeaf(false);
 			await leaf.openFile(file);
 
-			new Notice('New Ghost post created!');
+			new Notice('New ghost post created!');
 		} catch (error) {
 			console.error('Error creating new Ghost post:', error);
 			new Notice(`Failed to create new post: ${(error as Error).message}`);
@@ -396,14 +396,14 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 			// Check if anything was added
 			if (newContent === content) {
-				new Notice('This note already has all Ghost properties');
+				new Notice('This note already has all ghost properties');
 				return;
 			}
 
 			// Write back to file
 			await this.app.vault.modify(file, newContent);
 
-			new Notice('Ghost properties added! This note will now sync with Ghost.');
+			new Notice('Ghost properties added! This note will now sync with ghost.');
 
 			// Move file to sync folder if not already there
 			const syncFolderPath = normalizePath(this.settings.syncFolder);

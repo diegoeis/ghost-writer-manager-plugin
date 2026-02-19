@@ -156,7 +156,7 @@ export class SyncEngine {
 				console.debug(`[Ghost Sync] Updating post ${metadata.ghost_id}`);
 				ghostPost = await this.ghostClient.updatePost(metadata.ghost_id, postData);
 				if (this.settings.showSyncNotifications) {
-					new Notice(`Updated in Ghost: ${title}`);
+					new Notice(`Updated in ghost: ${title}`);
 				}
 				console.debug(`[Ghost Sync] Updated: ${title}`);
 				console.debug('[Ghost Sync] Ghost returned post:', {
@@ -170,7 +170,7 @@ export class SyncEngine {
 				console.debug('[Ghost Sync] Creating new post');
 				ghostPost = await this.ghostClient.createPost(postData);
 				if (this.settings.showSyncNotifications) {
-					new Notice(`Created in Ghost: ${title}`);
+					new Notice(`Created in ghost: ${title}`);
 				}
 				console.debug(`[Ghost Sync] Created: ${title}`, ghostPost);
 
