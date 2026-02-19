@@ -74,7 +74,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to manually sync
 		this.addCommand({
 			id: 'sync-ghost-posts',
-			name: 'Sync with Ghost',
+			name: 'Sync with ghost',
 			callback: async () => {
 				await this.syncWithGhost();
 			}
@@ -83,7 +83,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to test connection
 		this.addCommand({
 			id: 'test-ghost-connection',
-			name: 'Test Ghost connection',
+			name: 'Test ghost connection',
 			callback: async () => {
 				await this.testGhostConnection();
 			}
@@ -92,7 +92,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to create new Ghost post
 		this.addCommand({
 			id: 'create-new-ghost-post',
-			name: 'Create new Ghost post',
+			name: 'Create new ghost post',
 			callback: async () => {
 				await this.createNewGhostPost();
 			}
@@ -101,7 +101,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to add Ghost properties to current note
 		this.addCommand({
 			id: 'add-ghost-properties',
-			name: 'Add Ghost properties to current note',
+			name: 'Add ghost properties to current note',
 			editorCallback: (editor, view) => {
 				void this.addGhostPropertiesToCurrentNote(view.file);
 			}
@@ -110,7 +110,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to sync current note
 		this.addCommand({
 			id: 'sync-current-note',
-			name: 'Sync current note to Ghost',
+			name: 'Sync current note to ghost',
 			editorCallback: (editor, view) => {
 				if (view.file) {
 					void this.syncEngine.syncFileToGhost(view.file);
@@ -121,7 +121,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add debug command to check file properties
 		this.addCommand({
 			id: 'debug-ghost-properties',
-			name: 'Debug: show Ghost properties in current note',
+			name: 'Debug: show ghost properties in current note',
 			editorCallback: (editor, view) => {
 				if (!view.file) {
 					new Notice('No active file');
