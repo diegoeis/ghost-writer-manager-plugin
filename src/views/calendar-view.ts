@@ -80,10 +80,11 @@ export class CalendarView extends ItemView {
 		this.renderPostList(null); // show all posts on open
 	}
 
-	async onClose(): Promise<void> {
+	onClose(): Promise<void> {
 		this.monthLabelEl = null;
 		this.gridEl = null;
 		this.postListEl = null;
+		return Promise.resolve();
 	}
 
 	private renderHeader(container: HTMLElement): void {
@@ -400,12 +401,13 @@ export class CalendarView extends ItemView {
 			text: post.title
 		});
 
-		if (post.vaultFile) {
+		if (post.vaultFile instanceof TFile) {
+			const vaultFile = post.vaultFile;
 			titleLink.setAttribute('href', '#');
 			titleLink.addEventListener('click', (e) => {
 				e.preventDefault();
 				const leaf = this.app.workspace.getLeaf('tab');
-				void leaf.openFile(post.vaultFile as TFile);
+				void leaf.openFile(vaultFile);
 			});
 		} else {
 			titleLink.setAttribute('href', post.ghostAdminUrl);

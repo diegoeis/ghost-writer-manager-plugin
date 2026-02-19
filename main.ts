@@ -236,13 +236,13 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async activateCalendarView(): Promise<void> {
 		const existing = this.app.workspace.getLeavesOfType(CALENDAR_VIEW_TYPE);
 		if (existing.length > 0) {
-			this.app.workspace.revealLeaf(existing[0]);
+			void this.app.workspace.revealLeaf(existing[0]);
 			return;
 		}
 		const leaf = this.app.workspace.getRightLeaf(false);
 		if (!leaf) return;
 		await leaf.setViewState({ type: CALENDAR_VIEW_TYPE, active: true });
-		this.app.workspace.revealLeaf(leaf);
+		void this.app.workspace.revealLeaf(leaf);
 	}
 
 	onunload() {
@@ -491,9 +491,9 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Admin API key secret name')
-			.setDesc('Name of the secret in settings → keychain that contains your ghost admin API key (format: id:secret)')
+			.setDesc('Name of the secret in settings > keychain that contains your ghost admin api key (format: id:secret)')
 			.addText(text => text
-				.setPlaceholder('ghost-api-key')
+				.setPlaceholder('Ghost-api-key')
 				.setValue(this.plugin.settings.ghostApiKeySecretName)
 				.onChange(async (value) => {
 					this.plugin.settings.ghostApiKeySecretName = value.trim();
@@ -557,9 +557,9 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('YAML prefix')
-			.setDesc('Prefix for ghost metadata in YAML frontmatter (e.g., "ghost_" will create ghost_status, ghost_tags)')
+			.setDesc('Prefix for ghost metadata in frontmatter (e.g., "ghost_" will create ghost_status, ghost_tags)')
 			.addText(text => text
-				.setPlaceholder('ghost_')
+				.setPlaceholder('Eg: ghost_')
 				.setValue(this.plugin.settings.yamlPrefix)
 				.onChange(async (value) => {
 					this.plugin.settings.yamlPrefix = value.trim();
