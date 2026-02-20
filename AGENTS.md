@@ -6,7 +6,7 @@ This file provides guidance for AI agents working with the Ghost Writer Manager 
 
 **Ghost Writer Manager** is an Obsidian plugin that provides bidirectional synchronization between Obsidian vaults and Ghost CMS. It enables content creators to write in Obsidian and manage Ghost publications directly from their vault, with full editorial control via YAML frontmatter and an integrated editorial calendar.
 
-**Current Status**: v0.1.0 - One-way sync (Obsidian → Ghost) is implemented and working. Bidirectional sync and editorial calendar are planned for future releases.
+**Current Status**: v0.2.1 - One-way sync and editorial calendar are implemented and working. Bidirectional sync is planned for a future release.
 
 ## Quick Context
 
@@ -30,8 +30,8 @@ src/
 │   ├── markdown-to-lexical.ts # Obsidian → Ghost format
 │   └── lexical-to-markdown.ts # Ghost → Obsidian format (future)
 ├── metadata/                   # YAML frontmatter management
-├── views/                      # UI components (future)
-│   └── editorial-calendar.ts  # Sidebar calendar view
+├── views/                      # UI components
+│   └── calendar-view.ts       # Editorial calendar sidebar (ItemView)
 ├── frontmatter-parser.ts      # YAML parsing and validation
 ├── templates.ts               # Post templates with Ghost properties
 └── types.ts                   # TypeScript interfaces
@@ -40,10 +40,11 @@ src/
 ### Key Design Decisions
 
 1. **Authentication**: Ghost Admin API with JWT tokens, stored securely in Obsidian Keychain
-2. **Sync Strategy**: One-way sync (v0.1.0), bidirectional planned (v0.2.0)
+2. **Sync Strategy**: One-way sync (Obsidian → Ghost); bidirectional planned for future
 3. **Conflict Resolution**: Intelligent merge when possible, user prompt when necessary
 4. **YAML Control**: All Ghost metadata managed via configurable prefixed YAML properties (default: `g_`)
 5. **Sync Folder**: Isolated folder in vault for Ghost-synced posts only
+6. **Calendar View**: `ItemView` in sidebar, loads posts via Ghost API filtered by month, status dots via CSS pseudo-elements
 
 ## Development Workflow
 
@@ -231,14 +232,15 @@ Built-in debug commands (Cmd/Ctrl + P):
 
 ## Product Requirements Summary
 
-**Core Features (v1)**:
+**Core Features**:
 - ✅ One-way sync (Obsidian → Ghost)
 - ✅ YAML metadata control (all Ghost properties)
 - ✅ Post scheduling system
 - ✅ Periodic sync with configurable interval
 - ✅ Markdown to Lexical conversion
-- ⏳ Bidirectional sync (planned v0.2.0)
-- ⏳ Editorial calendar view (planned v0.2.0)
+- ✅ Editorial calendar sidebar view (v0.2.0)
+- ⏳ Bidirectional sync (future)
+- ⏳ Ghost Pages support (future)
 
 **Out of Scope**:
 - Ghost Pages (Posts only)
@@ -287,5 +289,5 @@ git push --tags      # Push release
 
 ---
 
-Last Updated: 2026-02-15
-Agent Version: 1.0.0
+Last Updated: 2026-02-19
+Agent Version: 1.1.0

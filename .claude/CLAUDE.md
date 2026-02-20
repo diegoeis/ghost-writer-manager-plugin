@@ -46,10 +46,13 @@ The plugin follows standard Obsidian plugin architecture with these key modules:
    - Maps Obsidian frontmatter to Ghost post metadata
    - Supports: status, tags, featured image, excerpt, published_at, no-sync flag
 
-5. **Editorial Calendar View** (`src/views/`)
-   - Sidebar view showing publications grouped by status
-   - Organized by publication date
-   - Provides direct links to vault notes and Ghost Admin
+5. **Editorial Calendar View** (`src/views/calendar-view.ts`)
+   - `CalendarView` extends `ItemView`, rendered in the sidebar
+   - Monthly grid with navigation (month/year), today button and refresh
+   - Status dots via CSS `::before`/`::after` pseudo-elements on day number: purple = published, green = scheduled
+   - Click a day to filter post list; click again to deselect and show all month
+   - Post list grouped by day with status badge, title link (opens vault note in new tab) and Ghost Admin link
+   - Full keyboard navigation and ARIA labels
 
 ### File Management
 
@@ -91,7 +94,7 @@ For complete details, see:
 
 Full product scope is defined in `docs/prd-001-ghost-writer-manager-plugin.md`.
 
-### Current Status (v0.1.0 - Released)
+### Current Status (v0.2.1 - Released)
 
 **Implemented Features:**
 - ✅ One-way sync (Obsidian → Ghost)
@@ -104,12 +107,12 @@ Full product scope is defined in `docs/prd-001-ghost-writer-manager-plugin.md`.
 - ✅ Markdown to Lexical format conversion
 - ✅ Status bar indicator
 - ✅ Manual sync commands and connection testing
+- ✅ Editorial calendar sidebar view (monthly grid, status dots, day filtering)
 
 ### Planned Features (Future Releases)
 
-- **FRD-001**: Editorial calendar sidebar view (v0.2.0)
-- **FRD-002**: Bidirectional sync with conflict resolution (v0.2.0)
-- **FRD-006**: Lexical/HTML → Markdown conversion (v0.2.0)
+- **FRD-002**: Bidirectional sync with conflict resolution
+- **FRD-006**: Lexical/HTML → Markdown conversion
 - Ghost Pages support (future)
 - Historical sync capability (future)
 
