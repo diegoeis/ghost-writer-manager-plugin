@@ -490,10 +490,10 @@ class GhostWriterSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('Admin API key secret name')
+			.setName('Admin api key secret name')
 			.setDesc('Name of the secret in settings > keychain that contains your ghost admin api key (format: id:secret)')
 			.addText(text => text
-				.setPlaceholder('Ghost-api-key')
+				.setPlaceholder('ghost-api-key')
 				.setValue(this.plugin.settings.ghostApiKeySecretName)
 				.onChange(async (value) => {
 					this.plugin.settings.ghostApiKeySecretName = value.trim();
