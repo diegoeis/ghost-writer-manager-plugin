@@ -577,3 +577,4 @@ class GhostWriterSettingTab extends PluginSettingTab {
 				}));
 	}
 }
+
