@@ -124,6 +124,9 @@ Full product scope is defined in `docs/prd-001-ghost-writer-manager-plugin.md`.
 
 - **Bug — Publish Date vs Scheduling Date**: O campo "Publish Date" do Ghost está sendo preenchido com a data de agendamento (`ghost_published_at`). O campo deve ser preenchido com a data de criação real do post. A `published_at` deve ser usada apenas para agendar o momento de publicação, não como data de exibição.
 
+- **Colocar linha de PUBLIC PREVIEW** no Obsidian para sincronizar no Ghost.
+
+
 ### Scope Limitations (All Versions)
 
 - Posts only (no Ghost Pages in v1)
