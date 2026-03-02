@@ -356,7 +356,9 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 			// Always keep the ghost client in sync with the current credentials
 			// so that any command invoked after plugin load uses the latest key.
-			this.ghostClient.updateCredentials(this.settings.ghostUrl, apiKey);
+			// Guard: ghostClient may not exist yet when loadApiKey() is called
+			// during onload() before the client is instantiated.
+			this.ghostClient?.updateCredentials(this.settings.ghostUrl, apiKey);
 
 			return apiKey;
 		} catch (error) {
