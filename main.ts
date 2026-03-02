@@ -353,6 +353,11 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			}
 
 			console.debug('[Ghost] Successfully loaded secret (length:', apiKey.length, ')');
+
+			// Always keep the ghost client in sync with the current credentials
+			// so that any command invoked after plugin load uses the latest key.
+			this.ghostClient.updateCredentials(this.settings.ghostUrl, apiKey);
+
 			return apiKey;
 		} catch (error) {
 			console.error('[Ghost] Error loading API key from secrets:', error);
