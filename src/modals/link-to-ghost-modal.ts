@@ -86,7 +86,7 @@ export class LinkToGhostModal extends Modal {
 		const warning = contentEl.createEl('p', {
 			cls: 'ghost-modal-warning'
 		});
-		warning.createEl('strong', { text: 'CAUTION: ' });
+		warning.createEl('strong', { text: 'Caution: ', cls: 'ghost-modal-warning-label' });
 		warning.appendText('The primary source will completely overwrite the content of the destination.');
 
 		// Buttons
