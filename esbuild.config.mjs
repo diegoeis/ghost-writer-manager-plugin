@@ -1,7 +1,7 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
-import { copyFileSync, mkdirSync, existsSync, readFileSync } from "fs";
+import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 
 const banner =
@@ -41,6 +41,14 @@ function copyToVault() {
 		// Copy styles.css if exists
 		if (existsSync('styles.css')) {
 			copyFileSync('styles.css', join(vaultPath, 'styles.css'));
+		}
+
+		// Create .hotreload marker so the Obsidian Hot Reload plugin
+		// automatically reloads this plugin when main.js changes in dev mode.
+		// Safe to create every time — it's always an empty file.
+		const hotreloadPath = join(vaultPath, '.hotreload');
+		if (!existsSync(hotreloadPath)) {
+			writeFileSync(hotreloadPath, '');
 		}
 
 		console.log('✓ Copied to vault:', vaultPath);
