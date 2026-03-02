@@ -24,7 +24,7 @@ try {
 
 // Copy files to vault for hot reload during development
 function copyToVault() {
-	if (!vaultPath || prod) return;
+	if (!vaultPath) return;
 
 	try {
 		// Ensure vault plugin directory exists

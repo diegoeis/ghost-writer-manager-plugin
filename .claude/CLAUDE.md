@@ -116,6 +116,14 @@ Full product scope is defined in `docs/prd-001-ghost-writer-manager-plugin.md`.
 - Ghost Pages support (future)
 - Historical sync capability (future)
 
+### Backlog / Known Issues
+
+- **Bug — Slug com caracteres especiais**: Palavras com acentos ou caracteres especiais estão sendo gravadas incorretamente no slug do Ghost (ex: `parte-2-tr-s-n-veis`). Deve-se normalizar para ASCII antes de gerar o slug, mantendo as palavras completas (ex: `três` → `tres`, `níveis` → `niveis`). Ver `src/converters/markdown-to-html.ts` → `generateSlug()`.
+
+- **Feature — Controle de distribuição por email**: Adicionar nova propriedade YAML (ex: `ghost_email_segment`) para controlar se a publicação será enviada por email, publicada só no blog, ou para os dois. Mapeia para os campos `email_only` e `newsletter` da Ghost Admin API.
+
+- **Bug — Publish Date vs Scheduling Date**: O campo "Publish Date" do Ghost está sendo preenchido com a data de agendamento (`ghost_published_at`). O campo deve ser preenchido com a data de criação real do post. A `published_at` deve ser usada apenas para agendar o momento de publicação, não como data de exibição.
+
 ### Scope Limitations (All Versions)
 
 - Posts only (no Ghost Pages in v1)

@@ -1,5 +1,71 @@
 /* Ghost Writer Manager Plugin Styles */
 
+/* ─── Ghost Link/Import Modals ──────────────────────────────────────────────── */
+
+.ghost-modal-description {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+	margin-bottom: var(--size-4-4);
+}
+
+.ghost-modal-warning {
+	color: var(--text-error);
+	font-size: var(--font-ui-small);
+	background: var(--background-modifier-error);
+	border-radius: var(--radius-s);
+	padding: var(--size-4-2) var(--size-4-3);
+	margin-bottom: var(--size-4-4);
+}
+
+.ghost-link-fields {
+	margin-bottom: var(--size-4-2);
+}
+
+.ghost-obsidian-field-wrapper {
+	position: relative;
+}
+
+/* Autocomplete dropdown */
+.ghost-autocomplete {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	z-index: var(--layer-menu);
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	box-shadow: var(--shadow-s);
+	max-height: 200px;
+	overflow-y: auto;
+}
+
+.ghost-autocomplete-list {
+	list-style: none;
+	margin: 0;
+	padding: var(--size-2-1) 0;
+}
+
+.ghost-autocomplete-item {
+	padding: var(--size-4-1) var(--size-4-3);
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	cursor: pointer;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ghost-autocomplete-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.ghost-autocomplete-item:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: -2px;
+	background: var(--background-modifier-hover);
+}
+
 /* Settings */
 .ghost-writer-settings {
 	padding: var(--size-4-4);
