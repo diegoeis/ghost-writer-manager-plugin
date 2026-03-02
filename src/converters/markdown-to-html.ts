@@ -103,10 +103,23 @@ export function extractTitle(markdown: string): string {
 }
 
 /**
- * Generate slug from title
+ * Generate slug from title.
+ *
+ * Steps:
+ * 1. NFD-normalise to decompose accented characters (é → e + ́)
+ * 2. Strip combining diacritical marks (Unicode category Mn) so that
+ *    accented letters become their ASCII base (é → e, ã → a, ç → c).
+ * 3. Lowercase and replace any run of non-alphanumeric chars with a hyphen.
+ * 4. Trim leading/trailing hyphens.
+ *
+ * Examples:
+ *   "Três Níveis" → "tres-niveis"
+ *   "Parte 2: Três Níveis"  → "parte-2-tres-niveis"
  */
 export function generateSlug(title: string): string {
 	return title
+		.normalize('NFD')
+		.replace(/[\u0300-\u036f]/g, '') // strip combining diacritics
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/^-+|-+$/g, '');

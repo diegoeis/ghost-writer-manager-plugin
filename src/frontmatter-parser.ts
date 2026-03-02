@@ -14,6 +14,86 @@ export interface GhostMetadata {
 	no_sync: boolean;
 	ghost_id?: string; // Ghost post ID if already synced
 	slug?: string; // Custom slug
+	ghost_url?: string; // Ghost editor URL for this post
+}
+
+/**
+ * Split file content into frontmatter block and body.
+ * Returns null if no valid frontmatter is found.
+ *
+ * Handles edge cases:
+ *  - trailing whitespace / CRLF line endings
+ *  - closing `---` with or without a trailing newline
+ */
+export function splitFrontmatter(fileContent: string): { raw: string; body: string } | null {
+	// Normalise line endings
+	const content = fileContent.replace(/\r\n/g, '\n');
+
+	if (!content.startsWith('---\n')) return null;
+
+	const closeIndex = content.indexOf('\n---', 4);
+	if (closeIndex === -1) return null;
+
+	// raw = everything between the opening and closing ---
+	const raw = content.slice(4, closeIndex);
+
+	// body = everything after the closing --- (and optional newline)
+	const afterClose = closeIndex + 4; // length of '\n---'
+	const body = content.slice(
+		content[afterClose] === '\n' ? afterClose + 1 : afterClose
+	);
+
+	return { raw, body };
+}
+
+/**
+ * Rebuild a full file from a frontmatter block and a body.
+ */
+export function joinFrontmatter(raw: string, body: string): string {
+	return `---\n${raw}\n---\n${body}`;
+}
+
+/**
+ * Update (or add) a single key inside existing frontmatter raw text.
+ * Preserves all other keys untouched.
+ */
+export function setFrontmatterKey(raw: string, key: string, value: string): string {
+	// Escape special regex chars in key (dots, underscores, etc.)
+	const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	const linePattern = new RegExp(`^${escapedKey}:.*$`, 'm');
+
+	if (linePattern.test(raw)) {
+		return raw.replace(linePattern, `${key}: ${value}`);
+	}
+	// Key not found — append before the last line to keep things tidy
+	return `${raw}\n${key}: ${value}`;
+}
+
+/**
+ * Upsert multiple key/value pairs into frontmatter, preserving all existing keys.
+ * `updates` is a plain object: { 'ghost_id': '123', 'ghost_slug': 'my-post' }
+ */
+export function upsertFrontmatterKeys(
+	fileContent: string,
+	updates: Record<string, string>
+): string {
+	const parsed = splitFrontmatter(fileContent);
+
+	if (!parsed) {
+		// No frontmatter — prepend a fresh block
+		const lines = Object.entries(updates)
+			.map(([k, v]) => `${k}: ${v}`)
+			.join('\n');
+		return joinFrontmatter(lines, `\n${fileContent}`);
+	}
+
+	let { raw, body } = parsed;
+
+	for (const [key, value] of Object.entries(updates)) {
+		raw = setFrontmatterKey(raw, key, value);
+	}
+
+	return joinFrontmatter(raw, body);
 }
 
 /**
@@ -99,7 +179,8 @@ export function parseGhostMetadata(
 		feature_image,
 		no_sync,
 		ghost_id: get('id') ? String(get('id')) : undefined,
-		slug: get('slug') ? String(get('slug')) : undefined
+		slug: get('slug') ? String(get('slug')) : undefined,
+		ghost_url: get('url') ? String(get('url')) : undefined
 	};
 }
 
@@ -107,12 +188,28 @@ export function parseGhostMetadata(
  * Extract content without frontmatter
  */
 export function extractContent(fileContent: string): string {
-	const frontmatterRegex = /^---\n[\s\S]*?\n---\n/;
-	return fileContent.replace(frontmatterRegex, '').trim();
+	const parsed = splitFrontmatter(fileContent);
+	if (!parsed) return fileContent.trim();
+	return parsed.body.trim();
 }
 
 /**
- * Update frontmatter with Ghost ID after sync
+ * Update frontmatter with Ghost URL (editor link).
+ * Preserves all existing frontmatter keys.
+ */
+export function updateFrontmatterWithGhostUrl(
+	fileContent: string,
+	ghostUrl: string,
+	prefix: string
+): string {
+	return upsertFrontmatterKeys(fileContent, {
+		[`${prefix}url`]: ghostUrl
+	});
+}
+
+/**
+ * Update frontmatter with Ghost ID and slug after sync.
+ * Preserves all existing frontmatter keys.
  */
 export function updateFrontmatterWithGhostId(
 	fileContent: string,
@@ -120,42 +217,25 @@ export function updateFrontmatterWithGhostId(
 	slug: string,
 	prefix: string
 ): string {
-	const frontmatterRegex = /^(---\n)([\s\S]*?)(\n---\n)/;
-	const match = fileContent.match(frontmatterRegex);
+	return upsertFrontmatterKeys(fileContent, {
+		[`${prefix}id`]: ghostId,
+		[`${prefix}slug`]: slug
+	});
+}
 
-	if (!match) {
-		// No frontmatter, add it
-		return `---
-${prefix}id: ${ghostId}
-${prefix}slug: ${slug}
----
-
-${fileContent}`;
+/**
+ * Upsert Ghost post metadata into existing frontmatter.
+ * Preserves ALL existing keys (both Ghost and non-Ghost).
+ * Only the keys present in `fields` are created or updated.
+ */
+export function upsertGhostMetadata(
+	fileContent: string,
+	fields: Record<string, string>,
+	prefix: string
+): string {
+	const prefixedFields: Record<string, string> = {};
+	for (const [key, value] of Object.entries(fields)) {
+		prefixedFields[`${prefix}${key}`] = value;
 	}
-
-	const [fullMatch, start, content, end] = match;
-
-	// Check if ghost_id already exists
-	const idPattern = new RegExp(`^${prefix}id:.*$`, 'm');
-	const slugPattern = new RegExp(`^${prefix}slug:.*$`, 'm');
-
-	let newContent = content;
-
-	if (idPattern.test(content)) {
-		// Update existing id
-		newContent = content.replace(idPattern, `${prefix}id: ${ghostId}`);
-	} else {
-		// Add new id
-		newContent = `${content}\n${prefix}id: ${ghostId}`;
-	}
-
-	if (slugPattern.test(newContent)) {
-		// Update existing slug
-		newContent = newContent.replace(slugPattern, `${prefix}slug: ${slug}`);
-	} else {
-		// Add new slug
-		newContent = `${newContent}\n${prefix}slug: ${slug}`;
-	}
-
-	return `${start}${newContent}${end}${fileContent.substring(fullMatch.length)}`;
+	return upsertFrontmatterKeys(fileContent, prefixedFields);
 }

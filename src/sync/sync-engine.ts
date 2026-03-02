@@ -77,28 +77,40 @@ export class SyncEngine {
 			console.debug('[Ghost Sync] Slug:', slug);
 
 			// Determine status based on g_published and g_published_at
+			//
+			// g_published_at is used ONLY for scheduling (future date). When a
+			// scheduled post's date has passed, we do NOT re-send published_at so
+			// Ghost preserves its actual publication timestamp instead of
+			// overwriting it with the original scheduling date.
+			//
+			// Rules:
+			//   g_published: false                         → draft (ignore g_published_at)
+			//   g_published: true, no g_published_at       → publish now (no published_at sent)
+			//   g_published: true, g_published_at in future → schedule (send published_at)
+			//   g_published: true, g_published_at in past   → publish now (do NOT send
+			//       published_at — let Ghost keep its real publication timestamp)
 			let status: 'draft' | 'published' | 'scheduled' = 'draft';
 			let publishedAt: string | undefined;
 
 			if (metadata.published) {
-				// Check if there's a published_at date
 				if (metadata.published_at) {
 					const scheduledDate = new Date(metadata.published_at);
 					const now = new Date();
 
-					// If date is in the future, schedule it
 					if (scheduledDate > now) {
+						// Future date → schedule the post
 						status = 'scheduled';
 						publishedAt = scheduledDate.toISOString();
 						console.debug('[Ghost Sync] Scheduling post for:', publishedAt);
 					} else {
-						// Date is in the past or now, publish immediately
+						// Past date → scheduling window passed; publish now without
+						// overwriting Ghost's real publication timestamp.
 						status = 'published';
-						publishedAt = scheduledDate.toISOString();
-						console.debug('[Ghost Sync] Publishing post with custom date:', publishedAt);
+						publishedAt = undefined;
+						console.debug('[Ghost Sync] Scheduled date is in the past — publishing now without custom published_at');
 					}
 				} else {
-					// No date specified, publish now
+					// No scheduling date → publish immediately
 					status = 'published';
 					console.debug('[Ghost Sync] Publishing post immediately');
 				}
@@ -119,7 +131,9 @@ export class SyncEngine {
 				slug
 			};
 
-			// Add published_at if scheduling or custom publish date
+			// Add published_at only when scheduling (future date).
+			// Never sent for already-published posts to avoid overwriting Ghost's
+			// real publication timestamp with the original scheduling date.
 			if (publishedAt) {
 				postData.published_at = publishedAt;
 			}
