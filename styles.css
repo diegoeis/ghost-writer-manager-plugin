@@ -17,7 +17,7 @@
 	background: transparent;
 }
 
-.ghost-modal-warning-label {
+.ghost-modal-warning > strong {
 	color: var(--text-error);
 }
 
