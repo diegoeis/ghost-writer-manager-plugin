@@ -4,7 +4,7 @@ import { GhostAPIClient } from './src/ghost/api-client';
 import { generateNewPostTemplate, addGhostPropertiesToContent } from './src/templates';
 import { SyncEngine } from './src/sync/sync-engine';
 import { CalendarView, CALENDAR_VIEW_TYPE } from './src/views/calendar-view';
-import { ImportFromGhostModal, buildGhostEditorUrl } from './src/modals/import-from-ghost-modal';
+import { ImportFromGhostModal } from './src/modals/import-from-ghost-modal';
 import { LinkToGhostModal } from './src/modals/link-to-ghost-modal';
 import { updateFrontmatterWithGhostUrl, updateFrontmatterWithGhostId, upsertGhostMetadata, splitFrontmatter, joinFrontmatter } from './src/frontmatter-parser';
 import { htmlToMarkdown } from './src/converters/html-to-markdown';
@@ -80,7 +80,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		);
 
 		// Ribbon icon to open editorial calendar
-		this.addRibbonIcon('calendar-days', 'Open ghost editorial calendar', () => {
+		this.addRibbonIcon('calendar-days', 'Open Ghost editorial calendar', () => {
 			void this.activateCalendarView();
 		});
 
@@ -97,7 +97,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to test connection
 		this.addCommand({
 			id: 'test-ghost-connection',
-			name: 'Test ghost connection',
+			name: 'Test Ghost connection',
 			callback: async () => {
 				await this.testGhostConnection();
 			}
@@ -106,7 +106,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to create new Ghost post
 		this.addCommand({
 			id: 'create-new-ghost-post',
-			name: 'Create new ghost post',
+			name: 'Create new Ghost post',
 			callback: async () => {
 				await this.createNewGhostPost();
 			}
@@ -115,7 +115,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to add Ghost properties to current note
 		this.addCommand({
 			id: 'add-ghost-properties',
-			name: 'Add ghost properties to current note',
+			name: 'Add Ghost properties to current note',
 			editorCallback: (editor, view) => {
 				void this.addGhostPropertiesToCurrentNote(view.file);
 			}
@@ -124,7 +124,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add command to sync current note
 		this.addCommand({
 			id: 'sync-current-note',
-			name: 'Sync current note to ghost',
+			name: 'Sync current note to Ghost',
 			editorCallback: (editor, view) => {
 				void this.syncCurrentNote(view.file);
 			}
@@ -147,7 +147,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Add debug command to check file properties
 		this.addCommand({
 			id: 'debug-ghost-properties',
-			name: 'Debug: show ghost properties in current note',
+			name: 'Debug: show Ghost properties in current note',
 			editorCallback: (editor, view) => {
 				if (!view.file) {
 					new Notice('No active file');
@@ -185,7 +185,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			callback: async () => {
 				const apiKey = this.loadApiKey();
 				if (!this.settings.ghostUrl || !apiKey) {
-					new Notice('Please configure ghost URL and admin API key first');
+					new Notice('Please configure Ghost URL and admin API key first');
 					return;
 				}
 
@@ -307,7 +307,8 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const savedData = await this.loadData() as Partial<GhostWriterSettings> | null;
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData);
 	}
 
 	async saveSettings() {
@@ -362,16 +363,16 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async testGhostConnection(): Promise<void> {
 		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure ghost URL and admin API key first');
+			new Notice('Please configure Ghost URL and admin API key first');
 			return;
 		}
 
 		try {
 			const isValid = await this.ghostClient.testConnection();
 			if (isValid) {
-				new Notice('Successfully connected to ghost!');
+				new Notice('Successfully connected to Ghost!');
 			} else {
-				new Notice('Failed to connect to ghost. Please check your credentials.');
+				new Notice('Failed to connect to Ghost. Please check your credentials.');
 			}
 		} catch (error) {
 			console.error('Ghost connection test failed:', error);
@@ -382,7 +383,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async syncWithGhost(): Promise<void> {
 		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure ghost URL and admin API key first');
+			new Notice('Please configure Ghost URL and admin API key first');
 			return;
 		}
 
@@ -419,7 +420,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			const leaf = this.app.workspace.getLeaf(false);
 			await leaf.openFile(file);
 
-			new Notice('New ghost post created!');
+			new Notice('New Ghost post created!');
 		} catch (error) {
 			console.error('Error creating new Ghost post:', error);
 			new Notice(`Failed to create new post: ${(error as Error).message}`);
@@ -433,7 +434,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async openImportFromGhostModal(): Promise<void> {
 		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure ghost URL and admin API key first');
+			new Notice('Please configure Ghost URL and admin API key first');
 			return;
 		}
 
@@ -515,7 +516,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 	async openLinkToGhostModal(): Promise<void> {
 		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure ghost URL and admin API key first');
+			new Notice('Please configure Ghost URL and admin API key first');
 			return;
 		}
 
@@ -643,14 +644,14 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		// Check credentials
 		const apiKey = this.loadApiKey();
 		if (!this.settings.ghostUrl || !apiKey) {
-			new Notice('Please configure ghost URL and admin API key first');
+			new Notice('Please configure Ghost URL and admin API key first');
 			return;
 		}
 
 		// Check if file has Ghost frontmatter
 		const cache = this.app.metadataCache.getFileCache(file);
 		if (!cache?.frontmatter) {
-			new Notice('This note has no frontmatter. Use "Add ghost properties to current note" first.');
+			new Notice('This note has no frontmatter. Use "add Ghost properties to current note" first.');
 			return;
 		}
 
@@ -714,14 +715,14 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 			// Check if anything was added
 			if (newContent === content) {
-				new Notice('This note already has all ghost properties');
+				new Notice('This note already has all Ghost properties');
 				return;
 			}
 
 			// Write back to file
 			await this.app.vault.modify(file, newContent);
 
-			new Notice('Ghost properties added! This note will now sync with ghost.');
+			new Notice('Ghost properties added! This note will now sync with Ghost.');
 
 			// Move file to sync folder if not already there
 			const syncFolderPath = normalizePath(this.settings.syncFolder);
@@ -767,7 +768,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Ghost URL')
-			.setDesc('Your ghost site URL (e.g., https://yourblog.ghost.io)')
+			.setDesc('Your Ghost site URL (e.g., https://yourblog.ghost.io)')
 			.addText(text => text
 				.setPlaceholder('https://yourblog.ghost.io')
 				.setValue(this.plugin.settings.ghostUrl)
@@ -778,8 +779,9 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Admin API key secret name')
-			.setDesc('Name of the secret in Settings > Keychain that contains your Ghost admin API key (format: id:secret)')
+			.setDesc('Name of the secret in settings > Keychain that contains your Ghost admin API key (format: ID:secret)')
 			.addText(text => text
+				// eslint-disable-next-line obsidianmd/ui/sentence-case
 				.setPlaceholder('ghost-api-key')
 				.setValue(this.plugin.settings.ghostApiKeySecretName)
 				.onChange(async (value) => {
@@ -791,20 +793,20 @@ class GhostWriterSettingTab extends PluginSettingTab {
 				setting.addExtraButton((button) => {
 					button
 						.setIcon('key')
-						.setTooltip('Open keychain settings')
+						.setTooltip('Open Keychain settings')
 						.onClick(() => {
-							// @ts-ignore - Open settings tab
-							this.app.setting.open();
-							// @ts-ignore - Navigate to Keychain tab
-							this.app.setting.openTabById('keychain');
+							// Access internal Obsidian settings API to navigate to Keychain tab
+							const appWithSetting = this.app as unknown as { setting: { open: () => void; openTabById: (id: string) => void } };
+							appWithSetting.setting.open();
+							appWithSetting.setting.openTabById('keychain');
 						});
-					button.extraSettingsEl.setAttribute('aria-label', 'Open keychain settings');
+					button.extraSettingsEl.setAttribute('aria-label', 'Open Keychain settings');
 				});
 			});
 
 		new Setting(containerEl)
 			.setName('Test connection')
-			.setDesc('Verify that your ghost credentials are working')
+			.setDesc('Verify that your Ghost credentials are working')
 			.addButton(button => button
 				.setButtonText('Test connection')
 				.setCta()
@@ -819,7 +821,7 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Sync folder')
-			.setDesc('Folder in your vault where ghost posts will be stored')
+			.setDesc('Folder in your vault where Ghost posts will be stored')
 			.addText(text => text
 				.setPlaceholder('Ghost posts')
 				.setValue(this.plugin.settings.syncFolder)
@@ -844,8 +846,10 @@ class GhostWriterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('YAML prefix')
-			.setDesc('Prefix for ghost metadata in frontmatter (e.g., "ghost_" will create ghost_status, ghost_tags)')
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc('Prefix for Ghost metadata in frontmatter (e.g., "ghost_" will create ghost_status, ghost_tags)')
 			.addText(text => text
+				// eslint-disable-next-line obsidianmd/ui/sentence-case
 				.setPlaceholder('e.g. ghost_')
 				.setValue(this.plugin.settings.yamlPrefix)
 				.onChange(async (value) => {
