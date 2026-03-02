@@ -470,7 +470,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 			const frontmatter = [
 				`${prefix}post_access: ${post.visibility ?? 'public'}`,
-				`${prefix}published: ${post.status === 'published' ? 'true' : 'false'}`,
+				`${prefix}published: ${(post.status === 'published' || post.status === 'scheduled') ? 'true' : 'false'}`,
 				`${prefix}published_at: "${post.published_at ?? ''}"`,
 				`${prefix}featured: ${post.featured ? 'true' : 'false'}`,
 				`${prefix}tags: ${tagsYaml}`,
@@ -554,7 +554,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 				const ghostFields: Record<string, string> = {
 					post_access: post.visibility ?? 'public',
-					published: post.status === 'published' ? 'true' : 'false',
+					published: (post.status === 'published' || post.status === 'scheduled') ? 'true' : 'false',
 					published_at: `"${post.published_at ?? ''}"`,
 					featured: post.featured ? 'true' : 'false',
 					tags: tagsYaml,
