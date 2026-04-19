@@ -148,6 +148,19 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			callback: () => { void this.openLinkToGhostModal(); }
 		});
 
+		// Add command to insert the paywall marker at the cursor
+		this.addCommand({
+			id: 'insert-paywall-marker',
+			name: 'Insert paywall marker (members-only)',
+			editorCallback: (editor) => {
+				const cursor = editor.getCursor();
+				const line = editor.getLine(cursor.line);
+				const prefix = line.length > 0 ? '\n\n' : '';
+				const suffix = '\n\n';
+				editor.replaceRange(`${prefix}--members-only--${suffix}`, cursor);
+			}
+		});
+
 		// Add debug command to check file properties
 		this.addCommand({
 			id: 'debug-ghost-properties',

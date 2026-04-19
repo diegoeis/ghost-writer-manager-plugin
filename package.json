@@ -1,7 +1,7 @@
 {
 	"name": "ghost-writer-manager",
 	"version": "0.2.7",
-	"description": "Synchronize posts bidirectionally between Ghost CMS and Obsidian with editorial calendar and YAML metadata control.",
+	"description": "Sync notes to Ghost CMS with post scheduling, YAML metadata control, and periodic sync.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -10,7 +10,6 @@
 		"lint": "eslint . --ext .ts"
 	},
 	"keywords": [
-		"obsidian",
 		"ghost",
 		"cms",
 		"sync",
