@@ -48,7 +48,7 @@ export class LinkToGhostModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		this.titleEl.setText('Link note to Ghost post');
+		this.titleEl.setText('Link note to ghost post');
 
 		// Load all vault markdown file names for autocomplete
 		this.allNoteNames = this.app.vault
@@ -58,7 +58,7 @@ export class LinkToGhostModal extends Modal {
 
 		// Description paragraph
 		contentEl.createEl('p', {
-			text: 'Relate existing content between Ghost and Obsidian.',
+			text: 'Relate existing content between ghost and Obsidian.',
 			cls: 'ghost-modal-description'
 		});
 
@@ -126,8 +126,8 @@ export class LinkToGhostModal extends Modal {
 
 	private renderGhostField(container: HTMLElement): void {
 		new Setting(container)
-			.setName('Choose the post in Ghost')
-			.setDesc('Paste the Ghost editor URL (e.g., https://yourblog.com/ghost/#/editor/post/...)')
+			.setName('Choose the post in ghost')
+			.setDesc('Paste the ghost editor URL (e.g., https://yourblog.com/ghost/#/editor/post/...)')
 			.addText(text => {
 				text
 					.setPlaceholder('https://yourblog.com/ghost/#/editor/post/...')
@@ -221,13 +221,13 @@ export class LinkToGhostModal extends Modal {
 	private async handleLink(): Promise<void> {
 		// Validate Ghost URL
 		if (!this.ghostUrlInput) {
-			new Notice('Please enter a Ghost editor URL');
+			new Notice('Please enter a ghost editor URL');
 			return;
 		}
 
 		const postId = extractPostIdFromUrl(this.ghostUrlInput);
 		if (!postId) {
-			new Notice('Invalid Ghost editor URL. Make sure it contains /editor/post/{id}');
+			new Notice('Invalid ghost editor URL. Make sure it contains /editor/post/{id}');
 			return;
 		}
 
@@ -244,7 +244,7 @@ export class LinkToGhostModal extends Modal {
 		const ghostUrl = buildGhostEditorUrl(this.settings.ghostUrl, postId);
 
 		try {
-			new Notice('Fetching post from Ghost...');
+			new Notice('Fetching post from ghost...');
 			const post = await this.ghostClient.getPost(postId);
 			this.close();
 			await this.onLink({ ghostPost: post, obsidianFile, source: this.source, ghostUrl });

@@ -48,10 +48,10 @@ export class ImportFromGhostModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 
-		this.titleEl.setText('Import post from Ghost');
+		this.titleEl.setText('Import post from ghost');
 
 		contentEl.createEl('p', {
-			text: 'Paste the Ghost editor URL of the post you want to import.',
+			text: 'Paste the ghost editor URL of the post you want to import.',
 			cls: 'ghost-modal-description'
 		});
 
@@ -80,7 +80,7 @@ export class ImportFromGhostModal extends Modal {
 					.setButtonText('Import post')
 					.setCta()
 					.onClick(() => { void this.handleImport(); });
-				btn.buttonEl.setAttribute('aria-label', 'Import post from Ghost');
+				btn.buttonEl.setAttribute('aria-label', 'Import post from ghost');
 			})
 			.addButton(btn => {
 				btn
@@ -94,20 +94,20 @@ export class ImportFromGhostModal extends Modal {
 
 	private async handleImport(): Promise<void> {
 		if (!this.urlInput) {
-			new Notice('Please enter a Ghost editor URL');
+			new Notice('Please enter a ghost editor URL');
 			return;
 		}
 
 		const postId = extractPostIdFromUrl(this.urlInput);
 		if (!postId) {
-			new Notice('Invalid Ghost editor URL. Make sure it contains /editor/post/{id}');
+			new Notice('Invalid ghost editor URL. Make sure it contains /editor/post/{id}');
 			return;
 		}
 
 		const ghostUrl = buildGhostEditorUrl(this.settings.ghostUrl, postId);
 
 		try {
-			new Notice('Fetching post from Ghost...');
+			new Notice('Fetching post from ghost...');
 			const post = await this.ghostClient.getPost(postId);
 			this.close();
 			await this.onImport(post, ghostUrl);

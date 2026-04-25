@@ -48,17 +48,6 @@ export default [
 				...globals.node,
 			},
 		},
-		rules: {
-			// Override sentence-case to treat Ghost and Obsidian as brand names
-			// Note: specifying 'brands' replaces the default list, so we must include
-			// Obsidian explicitly to preserve its capitalization in UI strings.
-			"obsidianmd/ui/sentence-case": [
-				"warn",
-				{
-					brands: ["Ghost", "Obsidian", "Keychain"],
-					acronyms: ["API", "URL", "YAML", "JWT", "CMS", "ID"],
-				},
-			],
-		},
+		rules: {},
 	},
 ];

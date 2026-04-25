@@ -422,7 +422,7 @@ export class CalendarView extends ItemView {
 		extLink.setAttribute('href', post.ghostAdminUrl);
 		extLink.setAttribute('target', '_blank');
 		extLink.setAttribute('rel', 'noopener noreferrer');
-		extLink.setAttribute('aria-label', 'Open in Ghost admin');
+		extLink.setAttribute('aria-label', 'Open in ghost admin');
 		setIcon(extLink, 'external-link');
 
 		return item;
