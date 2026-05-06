@@ -1,6 +1,6 @@
 {
 	"name": "ghost-writer-manager",
-	"version": "0.2.9",
+	"version": "0.2.10",
 	"description": "Sync notes to Ghost CMS with post scheduling, YAML metadata control, and periodic sync.",
 	"main": "main.js",
 	"scripts": {
