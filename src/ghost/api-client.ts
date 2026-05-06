@@ -185,11 +185,14 @@ export class GhostAPIClient {
 	/**
 	 * Get all posts
 	 */
-	async getPosts(filter?: string, limit: number | 'all' = 15): Promise<GhostPost[]> {
+	async getPosts(filter?: string, limit: number | 'all' = 15, order?: string): Promise<GhostPost[]> {
 		try {
 			let endpoint = `/posts/?formats=html,lexical&include=tags&limit=${limit}`;
 			if (filter) {
 				endpoint += `&filter=${encodeURIComponent(filter)}`;
+			}
+			if (order) {
+				endpoint += `&order=${encodeURIComponent(order)}`;
 			}
 
 			const response = await this.makeRequest(endpoint);

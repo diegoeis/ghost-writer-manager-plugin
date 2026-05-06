@@ -10,6 +10,8 @@ export interface GhostWriterSettings {
 	yamlPrefix: string;
 	lastSync: number;
 	showSyncNotifications: boolean;
+	schedulingIntervalDays: number; // days between scheduled publications
+	defaultPublishTime: string; // HH:MM (UTC) for scheduled posts
 }
 
 /**
@@ -22,7 +24,9 @@ export const DEFAULT_SETTINGS: GhostWriterSettings = {
 	syncInterval: 15,
 	yamlPrefix: 'ghost_',
 	lastSync: 0,
-	showSyncNotifications: true
+	showSyncNotifications: true,
+	schedulingIntervalDays: 7,
+	defaultPublishTime: '09:00',
 };
 
 /**

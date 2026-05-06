@@ -1,7 +1,7 @@
 import { App, TFile, Notice } from 'obsidian';
 import { GhostAPIClient } from '../ghost/api-client';
 import { GhostWriterSettings, GhostPost } from '../types';
-import { parseGhostMetadata, extractContent, updateFrontmatterWithGhostId } from '../frontmatter-parser';
+import { parseGhostMetadata, extractContent, updateFrontmatterWithGhostId, updateFrontmatterWithGhostUrl } from '../frontmatter-parser';
 import { extractTitle, generateSlug, normalizePaywallMarker } from '../converters/markdown-to-html';
 import { markdownToLexical } from '../converters/markdown-to-lexical';
 
@@ -180,6 +180,14 @@ export class SyncEngine {
 					htmlLength: ghostPost.html?.length || 0,
 					lexicalLength: ghostPost.lexical?.length || 0
 				});
+
+				if (!metadata.ghost_url) {
+					const baseUrl = this.settings.ghostUrl.replace(/\/$/, '');
+					const ghostEditorUrl = `${baseUrl}/ghost/#/editor/post/${metadata.ghost_id}`;
+					const updatedContent = updateFrontmatterWithGhostUrl(content, ghostEditorUrl, this.settings.yamlPrefix);
+					await this.app.vault.modify(file, updatedContent);
+					console.debug('[Ghost Sync] Frontmatter updated with Ghost editor URL');
+				}
 			} else {
 				// Create new post
 				console.debug('[Ghost Sync] Creating new post');
@@ -193,15 +201,18 @@ export class SyncEngine {
 				// Wait a bit to avoid the debounced sync from being called again
 				const capturedGhostPost = ghostPost;
 				setTimeout(() => {
-					// Update file with Ghost ID and slug
-					const updatedContent = updateFrontmatterWithGhostId(
+					// Update file with Ghost ID, slug and editor URL
+					const baseUrl = this.settings.ghostUrl.replace(/\/$/, '');
+					const ghostEditorUrl = `${baseUrl}/ghost/#/editor/post/${capturedGhostPost.id}`;
+					let updatedContent = updateFrontmatterWithGhostId(
 						content,
 						capturedGhostPost.id,
 						capturedGhostPost.slug,
 						this.settings.yamlPrefix
 					);
+					updatedContent = updateFrontmatterWithGhostUrl(updatedContent, ghostEditorUrl, this.settings.yamlPrefix);
 					void this.app.vault.modify(file, updatedContent).then(() => {
-						console.debug('[Ghost Sync] Frontmatter updated with Ghost ID');
+						console.debug('[Ghost Sync] Frontmatter updated with Ghost ID and editor URL');
 					}).catch((err: Error) => {
 						console.error('[Ghost Sync] Failed to update frontmatter:', err);
 					});

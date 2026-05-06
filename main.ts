@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, normalizePath, debounce } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, normalizePath, debounce, Modal, ButtonComponent } from 'obsidian';
 import { GhostWriterSettings, DEFAULT_SETTINGS, GhostPost } from './src/types';
 import { GhostAPIClient } from './src/ghost/api-client';
 import { generateNewPostTemplate, addGhostPropertiesToContent } from './src/templates';
@@ -6,7 +6,7 @@ import { SyncEngine } from './src/sync/sync-engine';
 import { CalendarView, CALENDAR_VIEW_TYPE } from './src/views/calendar-view';
 import { ImportFromGhostModal } from './src/modals/import-from-ghost-modal';
 import { LinkToGhostModal } from './src/modals/link-to-ghost-modal';
-import { updateFrontmatterWithGhostUrl, updateFrontmatterWithGhostId, upsertGhostMetadata, splitFrontmatter, joinFrontmatter } from './src/frontmatter-parser';
+import { updateFrontmatterWithGhostUrl, updateFrontmatterWithGhostId, upsertGhostMetadata, splitFrontmatter, joinFrontmatter, upsertFrontmatterKeys } from './src/frontmatter-parser';
 import { htmlToMarkdown } from './src/converters/html-to-markdown';
 import { paywallDecorationPlugin, paywallDeduplicateExtension } from './src/editor/paywall-decoration';
 
@@ -253,6 +253,18 @@ export default class GhostWriterManagerPlugin extends Plugin {
 					console.error('[Ghost Debug] Error reading file:', error);
 					new Notice(`Error reading file: ${error.message}`);
 				});
+			}
+		});
+
+		this.addCommand({
+			id: 'schedule-current-note',
+			name: 'Schedule current note',
+			editorCheckCallback: (checking, _editor, ctx) => {
+				if (ctx.file) {
+					if (!checking) void this.scheduleCurrentNote(ctx.file);
+					return true;
+				}
+				return false;
 			}
 		});
 	}
@@ -665,25 +677,25 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			return;
 		}
 
-		// Check if file has Ghost frontmatter
-		const cache = this.app.metadataCache.getFileCache(file);
-		if (!cache?.frontmatter) {
-			new Notice('This note has no frontmatter. Use "add ghost properties to current note" first.');
-			return;
-		}
-
-		const hasGhostProps = Object.keys(cache.frontmatter).some(key =>
+		// Check if file has Ghost frontmatter — add properties automatically if missing
+		let cache = this.app.metadataCache.getFileCache(file);
+		const hasGhostProps = cache?.frontmatter && Object.keys(cache.frontmatter).some(key =>
 			key.startsWith(this.settings.yamlPrefix)
 		);
 
 		if (!hasGhostProps) {
-			new Notice(`No Ghost properties found (prefix: "${this.settings.yamlPrefix}"). Use "Add ghost properties to current note" first.`);
-			return;
+			const content = await this.app.vault.read(file);
+			const newContent = addGhostPropertiesToContent(content, this.settings);
+			await this.app.vault.modify(file, newContent);
+			new Notice('Ghost properties added. Syncing…');
+			// Wait for metadata cache to update before proceeding
+			await new Promise(resolve => setTimeout(resolve, 300));
+			cache = this.app.metadataCache.getFileCache(file);
 		}
 
 		// Check no_sync flag
 		const noSyncKey = `${this.settings.yamlPrefix}no_sync`;
-		if (cache.frontmatter[noSyncKey] === true || cache.frontmatter[noSyncKey] === 'true') {
+		if (cache?.frontmatter?.[noSyncKey] === true || cache?.frontmatter?.[noSyncKey] === 'true') {
 			new Notice('Sync is disabled for this note (no_sync: true).');
 			return;
 		}
@@ -762,6 +774,108 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			console.error('Error adding Ghost properties:', error);
 			new Notice(`Failed to add Ghost properties: ${(error as Error).message}`);
 		}
+	}
+
+	async scheduleCurrentNote(file: TFile | null): Promise<void> {
+		if (!file) {
+			new Notice('No active file');
+			return;
+		}
+
+		const apiKey = this.loadApiKey();
+		if (!this.settings.ghostUrl || !apiKey) {
+			new Notice('Please configure ghost URL and admin API key first');
+			return;
+		}
+
+		// Fetch the most recent published or scheduled post
+		let lastPost: GhostPost | undefined;
+		try {
+			const posts = await this.ghostClient.getPosts(
+				'status:[published,scheduled]',
+				10,
+				'published_at desc'
+			);
+			lastPost = posts[0];
+		} catch (error) {
+			new Notice(`Failed to fetch posts from Ghost: ${(error as Error).message}`);
+			return;
+		}
+
+		// Calculate the new scheduled date
+		const base = lastPost?.published_at ? new Date(lastPost.published_at) : new Date();
+		base.setDate(base.getDate() + this.settings.schedulingIntervalDays);
+
+		const [hh, mm] = this.settings.defaultPublishTime.split(':').map(Number);
+		base.setUTCHours(hh, mm, 0, 0);
+
+		const newIso = base.toISOString();
+		const newDateLabel = base.toLocaleString();
+
+		// Read current frontmatter to check for existing date
+		const content = await this.app.vault.read(file);
+		const cache = this.app.metadataCache.getFileCache(file);
+		const existingDate = cache?.frontmatter?.[`${this.settings.yamlPrefix}published_at`] as string | undefined;
+
+		const applyDate = async (): Promise<void> => {
+			const updated = upsertFrontmatterKeys(content, {
+				[`${this.settings.yamlPrefix}published_at`]: newIso,
+				[`${this.settings.yamlPrefix}published`]: 'true',
+			});
+			await this.app.vault.modify(file, updated);
+			new Notice(`Scheduled for ${newDateLabel}`);
+		};
+
+		if (existingDate) {
+			const existingLabel = new Date(existingDate).toLocaleString();
+			new ConfirmScheduleModal(this.app, existingLabel, newDateLabel, () => {
+				void applyDate();
+			}).open();
+		} else {
+			await applyDate();
+		}
+	}
+}
+
+class ConfirmScheduleModal extends Modal {
+	private currentDate: string;
+	private newDate: string;
+	private onConfirm: () => void;
+
+	constructor(app: App, currentDate: string, newDate: string, onConfirm: () => void) {
+		super(app);
+		this.currentDate = currentDate;
+		this.newDate = newDate;
+		this.onConfirm = onConfirm;
+	}
+
+	onOpen(): void {
+		const { contentEl } = this;
+		contentEl.createEl('h3', { text: 'Overwrite scheduled date?' });
+		contentEl.createEl('p', {
+			text: `This note already has a scheduled date: ${this.currentDate}`
+		});
+		contentEl.createEl('p', {
+			text: `Replace with: ${this.newDate}`
+		});
+
+		const buttonRow = contentEl.createDiv({ cls: 'modal-button-container' });
+
+		new ButtonComponent(buttonRow)
+			.setButtonText('Overwrite')
+			.setCta()
+			.onClick(() => {
+				this.onConfirm();
+				this.close();
+			});
+
+		new ButtonComponent(buttonRow)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
 	}
 }
 
@@ -879,6 +993,37 @@ class GhostWriterSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.showSyncNotifications = value;
 					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setHeading()
+			.setName('Scheduling');
+
+		new Setting(containerEl)
+			.setName('Interval between posts')
+			.setDesc('Number of days between scheduled publications')
+			.addText(text => text
+				.setPlaceholder('7')
+				.setValue(String(this.plugin.settings.schedulingIntervalDays))
+				.onChange(async (value) => {
+					const days = parseInt(value);
+					if (!isNaN(days) && days > 0) {
+						this.plugin.settings.schedulingIntervalDays = days;
+						await this.plugin.saveSettings();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName('Default publish time')
+			.setDesc('Time of day for scheduled posts (e.g. 09:00).')
+			.addText(text => text
+				.setPlaceholder('09:00')
+				.setValue(this.plugin.settings.defaultPublishTime)
+				.onChange(async (value) => {
+					if (/^\d{2}:\d{2}$/.test(value.trim())) {
+						this.plugin.settings.defaultPublishTime = value.trim();
+						await this.plugin.saveSettings();
+					}
 				}));
 	}
 }
