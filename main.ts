@@ -67,6 +67,23 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			);
 		}
 
+		// Watch for file deletions — delete corresponding Ghost post if note has ghost_id
+		this.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				if (!(file instanceof TFile)) return;
+				if (!file.path.startsWith(normalizePath(this.settings.syncFolder))) return;
+				if (file.extension !== 'md') return;
+
+				void (async () => {
+					try {
+						await this.syncEngine.deletePostForFile(file);
+					} catch (error) {
+						new Notice(`Erro ao deletar post no Ghost: ${(error as Error).message}`);
+					}
+				})();
+			})
+		);
+
 		// Add status bar item
 		this.statusBarItem = this.addStatusBarItem();
 		this.updateStatusBar('idle');

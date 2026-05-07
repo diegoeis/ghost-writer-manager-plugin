@@ -139,13 +139,9 @@ export class SyncEngine {
 				postData.published_at = publishedAt;
 			}
 
-			// Add optional fields
-			if (metadata.excerpt) {
-				postData.excerpt = metadata.excerpt;
-			}
-			if (metadata.feature_image) {
-				postData.feature_image = metadata.feature_image;
-			}
+			// Add optional fields — send null to explicitly clear values in Ghost
+			postData.excerpt = metadata.excerpt || null;
+			postData.feature_image = metadata.feature_image || null;
 			if (metadata.tags.length > 0) {
 				postData.tags = metadata.tags.map(name => ({ name }));
 			}
@@ -277,6 +273,22 @@ export class SyncEngine {
 		}
 
 		return results;
+	}
+
+	/**
+	 * Delete the Ghost post associated with a deleted Obsidian note.
+	 * Only acts if the file has a ghost_id in its frontmatter.
+	 */
+	async deletePostForFile(file: TFile): Promise<void> {
+		const cache = this.app.metadataCache.getFileCache(file);
+		const frontmatter = cache?.frontmatter;
+		if (!frontmatter) return;
+
+		const postId = frontmatter[`${this.settings.yamlPrefix}id`] as string | undefined;
+		if (!postId) return;
+
+		await this.ghostClient.deletePost(postId);
+		new Notice(`Post deletado no Ghost: "${file.basename}"`);
 	}
 
 	/**
