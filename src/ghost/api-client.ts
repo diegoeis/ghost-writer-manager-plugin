@@ -84,7 +84,7 @@ export class GhostAPIClient {
 	 * Base64 URL encode
 	 */
 	private base64UrlEncode(str: string): string {
-		const base64 = btoa(str);
+		const base64 = Buffer.from(str, 'utf8').toString('base64');
 		return base64
 			.replace(/\+/g, '-')
 			.replace(/\//g, '_')
@@ -125,7 +125,7 @@ export class GhostAPIClient {
 		const signature = await crypto.subtle.sign('HMAC', key, messageData);
 
 		// Convert to base64url
-		const base64 = btoa(String.fromCharCode(...new Uint8Array(signature)));
+		const base64 = Buffer.from(signature).toString('base64');
 		return base64
 			.replace(/\+/g, '-')
 			.replace(/\//g, '_')
