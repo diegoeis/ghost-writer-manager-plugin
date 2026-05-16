@@ -1,7 +1,7 @@
 {
 	"id": "ghost-writer-manager",
 	"name": "Ghost Writer Manager",
-	"version": "0.2.13",
+	"version": "0.2.14",
 	"minAppVersion": "1.11.4",
 	"description": "Sync notes to Ghost CMS with post scheduling, YAML metadata control, and periodic sync.",
 	"author": "Diego Eis",
