@@ -89,7 +89,7 @@ export class ImportFromGhostModal extends Modal {
 				btn.buttonEl.setAttribute('aria-label', 'Cancel import');
 			});
 
-		buttonSetting.settingEl.setCssProps({'border-top': 'none', 'padding-top': '0'});
+		buttonSetting.settingEl.addClass('ghost-modal-button-row');
 	}
 
 	private async handleImport(): Promise<void> {

@@ -105,7 +105,7 @@ export class LinkToGhostModal extends Modal {
 				btn.buttonEl.setAttribute('aria-label', 'Cancel');
 			});
 
-		buttonSetting.settingEl.setCssProps({'border-top': 'none', 'padding-top': '0'});
+		buttonSetting.settingEl.addClass('ghost-modal-button-row');
 	}
 
 	private renderFields(): void {

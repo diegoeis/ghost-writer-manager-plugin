@@ -137,7 +137,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.addCommand({
 			id: 'add-ghost-properties',
 			name: 'Add ghost properties to current note',
-			editorCallback: (editor, view) => {
+			editorCallback: (_editor, view) => {
 				void this.addGhostPropertiesToCurrentNote(view.file);
 			}
 		});
@@ -146,7 +146,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.addCommand({
 			id: 'sync-current-note',
 			name: 'Sync current note to ghost',
-			editorCallback: (editor, view) => {
+			editorCallback: (_editor, view) => {
 				void this.syncCurrentNote(view.file);
 			}
 		});
@@ -182,7 +182,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.addCommand({
 			id: 'debug-ghost-properties',
 			name: 'Debug: show ghost properties in current note',
-			editorCallback: (editor, view) => {
+			editorCallback: (_editor, view) => {
 				if (!view.file) {
 					new Notice('No active file');
 					return;
@@ -248,7 +248,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 		this.addCommand({
 			id: 'debug-show-file-data',
 			name: 'Debug: show file content and metadata',
-			editorCallback: (editor, view) => {
+			editorCallback: (_editor, view) => {
 				const file = view.file;
 				if (!file) {
 					new Notice('No active file');
@@ -348,7 +348,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 
 		// Auto-reset to idle after success/error
 		if (status === 'success' || status === 'error') {
-			setTimeout(() => this.updateStatusBar('idle'), 3000);
+			activeWindow.setTimeout(() => this.updateStatusBar('idle'), 3000);
 		}
 	}
 
@@ -706,7 +706,7 @@ export default class GhostWriterManagerPlugin extends Plugin {
 			await this.app.vault.modify(file, newContent);
 			new Notice('Ghost properties added. Syncing…');
 			// Wait for metadata cache to update before proceeding
-			await new Promise(resolve => setTimeout(resolve, 300));
+			await new Promise(resolve => activeWindow.setTimeout(resolve, 300));
 			cache = this.app.metadataCache.getFileCache(file);
 		}
 

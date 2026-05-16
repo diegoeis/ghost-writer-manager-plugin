@@ -266,8 +266,7 @@ export class CalendarView extends ItemView {
 	}
 
 	private renderDayCell(day: number, hasPublished: boolean, hasScheduled: boolean, isToday: boolean): HTMLElement {
-		const cell = document.createElement('div');
-		cell.addClass('ghost-calendar-day-cell');
+		const cell = createDiv({ cls: 'ghost-calendar-day-cell' });
 		const hasPosts = hasPublished || hasScheduled;
 
 		if (isToday) {
@@ -307,7 +306,7 @@ export class CalendarView extends ItemView {
 			});
 		}
 
-		const numberEl = cell.createEl('span', { cls: 'ghost-calendar-day-number', text: String(day) });
+		const numberEl = cell.createSpan({ cls: 'ghost-calendar-day-number', text: String(day) });
 
 		if (hasPublished) numberEl.addClass('ghost-calendar-day-number--published');
 		if (hasScheduled) numberEl.addClass('ghost-calendar-day-number--scheduled');
@@ -388,8 +387,7 @@ export class CalendarView extends ItemView {
 	}
 
 	private renderPostItem(post: CalendarPost): HTMLElement {
-		const item = document.createElement('div');
-		item.addClass('ghost-calendar-post-item');
+		const item = createDiv({ cls: 'ghost-calendar-post-item' });
 
 		// Status badge
 		const statusCls = post.status === 'published'

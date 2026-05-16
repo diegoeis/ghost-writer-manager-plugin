@@ -46,6 +46,12 @@ export default [
 			globals: {
 				...globals.browser,
 				...globals.node,
+				activeWindow: "readonly",
+				activeDocument: "readonly",
+				createDiv: "readonly",
+				createEl: "readonly",
+				createSpan: "readonly",
+				createFragment: "readonly",
 			},
 		},
 		rules: {},

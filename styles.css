@@ -541,3 +541,10 @@
 	outline-offset: 2px;
 	border-radius: var(--radius-s);
 }
+
+/* ─── Modal button row (Import/Link to Ghost) ───────────────────────────────── */
+
+.ghost-modal-button-row {
+	border-top: none;
+	padding-top: 0;
+}

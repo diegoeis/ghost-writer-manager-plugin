@@ -8,12 +8,10 @@ const MARKER = '--members-only--';
  */
 class PaywallWidget extends WidgetType {
 	toDOM(): HTMLElement {
-		const el = document.createElement('div');
-		el.className = 'ghost-paywall-line';
+		const el = createDiv({ cls: 'ghost-paywall-line' });
 		el.setAttribute('aria-label', 'Members-only paywall');
 
-		const label = el.createEl('span', { text: '⬇ members only below this line' });
-		label.className = 'ghost-paywall-label';
+		el.createSpan({ cls: 'ghost-paywall-label', text: '⬇ members only below this line' });
 
 		return el;
 	}

@@ -33,7 +33,7 @@ export class SyncEngine {
 
 			// If cache is not ready, wait a bit
 			if (!cache) {
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 				cache = this.app.metadataCache.getFileCache(file);
 			}
 
@@ -196,7 +196,7 @@ export class SyncEngine {
 				// IMPORTANT: Don't trigger another sync by modifying the file immediately
 				// Wait a bit to avoid the debounced sync from being called again
 				const capturedGhostPost = ghostPost;
-				setTimeout(() => {
+				activeWindow.setTimeout(() => {
 					// Update file with Ghost ID, slug and editor URL
 					const baseUrl = this.settings.ghostUrl.replace(/\/$/, '');
 					const ghostEditorUrl = `${baseUrl}/ghost/#/editor/post/${capturedGhostPost.id}`;
