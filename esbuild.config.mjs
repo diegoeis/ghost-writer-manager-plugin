@@ -1,6 +1,6 @@
 import esbuild from "esbuild";
 import process from "process";
-import builtins from "builtin-modules";
+import { builtinModules } from "node:module";
 import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 
@@ -77,7 +77,7 @@ const context = await esbuild.context({
 		'@lezer/common',
 		'@lezer/highlight',
 		'@lezer/lr',
-		...builtins],
+		...builtinModules],
 	format: 'cjs',
 	target: 'es2018',
 	logLevel: "info",
